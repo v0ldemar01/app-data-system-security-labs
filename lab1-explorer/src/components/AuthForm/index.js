@@ -1,5 +1,5 @@
-import React, { useCallback, useState } from 'react';
-import { useDispatch } from 'react-redux';
+import React, { useCallback, useMemo, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { userActionCreator } from 'store/actions';
 import { Field, Form, Formik } from 'formik';
 import { initialValues, validationSchema } from './form';
@@ -17,13 +17,6 @@ import {
 import { useFormStyles } from 'styles/form';
 import { selectStyles } from 'styles/select';
 
-
-const roleOptions = ['admin', 'user']
-  .map(value => ({
-    label: convertFirstCharToUpper(value),
-    value
-  }));
-
 const animatedComponents = makeAnimated();
 
 const AuthForm = () => {
@@ -31,8 +24,18 @@ const AuthForm = () => {
 
   const dispatch = useDispatch();
 
+  const userCredentialsConfig = useSelector(state => state.user.userCredentialsConfig);
+
   const commonFormClasses = useFormStyles();
   const theme = useTheme();
+
+  const roleOptions = useMemo(
+    () => userCredentialsConfig.map(({ role }) => ({
+      label: convertFirstCharToUpper(role),
+      value: role
+    })),
+    [userCredentialsConfig]
+  );
 
   const togglePasswordVisibility = useCallback(() => setShowPassword(prev => !prev), []);
 

@@ -1,18 +1,17 @@
-import React, { useCallback, useState, useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fsActionCreator } from 'store/actions';
 import { useCommonStyles } from 'components/styles/common';
 import FsTreeItem from 'components/FsTreeItem';
 import clsx from 'clsx';
 import { Box, Paper } from '@material-ui/core';
-import { TreeView, TreeItem } from '@material-ui/lab';
+import { TreeView } from '@material-ui/lab';
 import {
   ExpandMore as ExpandMoreIcon,
   ChevronRight as ChevronRightIcon
 } from '@material-ui/icons';
 
 import { useStyles } from './classes';
-
 
 const NavigationArea = ({
   structure,
@@ -32,14 +31,23 @@ const NavigationArea = ({
     [permissions, dispatch]
   );
 
+  const handleOpenFile = useCallback(
+    id => dispatch(fsActionCreator.toggleExpandedFile(id)),
+    [dispatch]
+  );
+
   useEffect(() => {
     loadFsStructure();
   }, [permissions]);
 
-  const renderTree = (node, layer = 0) => (
-    <FsTreeItem key={node.id} layer={layer} {...node}>
-      {Array.isArray(node.children) ? node.children.map(childNode => renderTree(childNode, layer + 1)) : null}
-    </FsTreeItem>
+  const renderTree = useCallback(
+    (node, layer = 0) => (
+      <FsTreeItem key={node.id} layer={layer} {...node} onOpenFile={handleOpenFile}>
+        {Array.isArray(node.children) ? node.children
+          .map(childNode => renderTree(childNode, layer + 1)) : null}
+      </FsTreeItem>
+    ),
+    [handleOpenFile]
   );
 
   return (

@@ -1,8 +1,15 @@
 const { dialog } = window.require('@electron/remote');
 
-export const createDialog = (message, detail) => dialog.showMessageBox({
+export const createErrorDialog = (message, detail) => dialog.showMessageBox({
   type: 'error',
-  title: 'Error',
+  title: 'My app',
+  message,
+  detail
+});
+
+export const createSuccessDialog = (message, detail) => dialog.showMessageBox({
+  type: 'info',
+  title: 'My app',
   message,
   detail
 });

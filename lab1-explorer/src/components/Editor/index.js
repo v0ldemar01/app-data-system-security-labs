@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo, useState, useEffect } from 'react';
-import { createDialog } from 'helpers/dialog.helper';
+import { useDispatch } from 'react-redux';
+import { createErrorDialog } from 'helpers/dialog.helper';
 import {
   Box,
   Button,
@@ -16,6 +17,7 @@ import {
 import { useStyles } from './classes';
 import { useCommonStyles } from 'components/styles/common';
 import { useFormStyles } from 'styles/form';
+import { fsActionCreator } from 'store/actions';
 
 const Editor = ({
   fileOpen,
@@ -26,6 +28,8 @@ const Editor = ({
   const [newFileName, setFileName] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
 
+  const dispatch = useDispatch();
+
   const classes = useStyles();
   const commonClasses = useCommonStyles();
   const commonFormClasses = useFormStyles();
@@ -35,6 +39,11 @@ const Editor = ({
       setFileContent(expandedFile.content);
     }
   }, [expandedFile]);
+
+  const handleCloseFile = useCallback(
+    () => dispatch(fsActionCreator.toggleExpandedFile(expandedFile?.id)),
+    [expandedFile, dispatch]
+  );
 
   const handleContentChange = useCallback(event => setFileContent(event.target.value), []);
 
@@ -61,7 +70,7 @@ const Editor = ({
       if (expandedFile) {
         finalSaveFile();
       } else if (!fileContent) {
-        createDialog('Failed creating file', 'File cannot be empty')
+        createErrorDialog('Failed creating file', 'File cannot be empty')
       } else {
         setModalOpen(true);
       }
@@ -70,6 +79,17 @@ const Editor = ({
   );
 
   const handleCloseModal = useCallback(() => setModalOpen(false), []);
+
+  const handleClear = useCallback(
+    () => {
+      setFileContent('');
+      setFileName('');
+      if (expandedFile) {
+        handleCloseFile();
+      }
+    },
+    [expandedFile, handleCloseFile]
+  );
 
   const modalSetFileName = useMemo(
     () => (
@@ -129,7 +149,15 @@ const Editor = ({
               placeholder={expandedFile ? expandedFile?.content : ''}
               className={classes.formTextField}
             />
-            <Box mt={3.5}>
+            <Box mt={3.5} display="flex" gridGap={20}>
+              <Button
+                variant="contained"
+                color="secondary"
+                style={{ textTransform: 'none' }}
+                onClick={handleClear}
+              >
+                Cancel
+              </Button>
               <Button
                 variant="contained"
                 color="primary"

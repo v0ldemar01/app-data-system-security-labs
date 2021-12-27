@@ -1,5 +1,5 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { createDialog } from 'helpers/dialog.helper';
+import { createErrorDialog } from 'helpers/dialog.helper';
 import { ActionType } from './common';
 
 export const authUser = createAsyncThunk(
@@ -13,7 +13,7 @@ export const authUser = createAsyncThunk(
     const activeCredentials = userCredentialsConfig
       .find(({ role, password }) => role === credentials.role && password === credentials.password);
     if (!activeCredentials) {
-      createDialog('Failed authorization into system', 'Incorrect password')
+      createErrorDialog('Failed authorization into system', 'Incorrect password')
       return rejectWithValue();
     }
     return { activeCredentials };

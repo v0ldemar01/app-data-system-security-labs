@@ -47,11 +47,14 @@ const nestIterateFs = (currentLayerStructure, layerCount, components, permission
 }
 
 const createFsNode = (name, type, checkPermittions, parentCheckPermittions) => {
-  const allow = ((checkPermittions
+  // const allow = ((checkPermittions
+  //   && checkPermittions?.allow
+  //   && checkPermittions?.allow?.includes('W')
+  //   && (parentCheckPermittions && parentCheckPermittions.allow?.includes('W')))
+  //     || (!checkPermittions && !parentCheckPermittions)) ? ['W'] : [];
+  const allow = (checkPermittions
     && checkPermittions?.allow
-    && checkPermittions?.allow?.includes('W')
-    && (parentCheckPermittions && parentCheckPermittions.allow?.includes('W')))
-      || (!checkPermittions && !parentCheckPermittions)) ? ['W'] : [];
+    && !checkPermittions?.allow?.includes('W')) || (parentCheckPermittions && !parentCheckPermittions.allow?.includes('W')) ? [] : ['W']
   return {
     id: v4(),
     name,
@@ -87,6 +90,8 @@ export const getFilePathById = (id, currentLayerStructure, filePath = '') => {
 }
 
 export const readFile = path => fs.readFile(path, 'utf-8');
+
+export const writeFile = (path, content, isRewrite = false) => fs.writeFile(path, content, { encoding: 'utf8', ...(isRewrite ? { flag: 'w' } : {}) });
 
 export const createFsStructure = async (permissions = []) => {
   const structure = [];

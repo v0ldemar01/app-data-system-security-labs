@@ -1,8 +1,17 @@
 import React, { useMemo } from 'react';
 import { TreeItem } from '@material-ui/lab';
-import { Box, Typography } from '@material-ui/core';
+import { Box, Tooltip, Typography } from '@material-ui/core';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faDesktop, faHdd, faFolder, faUserEdit, faMinusCircle, faPlus, faFile } from '@fortawesome/free-solid-svg-icons';
+import {
+  faDesktop,
+  faHdd,
+  faFolder,
+  faUserEdit,
+  faMinusCircle,
+  faPlus,
+  faFile,
+  faGlasses
+} from '@fortawesome/free-solid-svg-icons';
 
 import { useStyles } from './classes';
 
@@ -12,6 +21,7 @@ const FsTreeItem = ({
   layer,
   type,
   allow,
+  onOpenFile,
   ...other
 }) => {
   const classes = useStyles();
@@ -30,12 +40,31 @@ const FsTreeItem = ({
           <Typography variant="body2" className={classes.labelText}>
             {name}
           </Typography>
-          {allow.includes('W') && layer > 1 && (
+          {type === 'directory' && allow.includes('W') && layer > 1 && (
             <Box display="flex">
-              <FontAwesomeIcon icon={faPlus} className={classes.labelIcon} size="sm" />
-              <FontAwesomeIcon icon={faUserEdit} className={classes.labelIcon} size="sm" />
-              <FontAwesomeIcon icon={faMinusCircle} className={classes.labelIcon} size="sm" />
+              <Tooltip title="Add a file or folder">
+                <Box>
+                  <FontAwesomeIcon icon={faPlus} className={classes.labelIcon} size="sm" />
+                </Box>
+              </Tooltip>
+              <Tooltip title="Edit folder">
+                <Box>
+                  <FontAwesomeIcon icon={faUserEdit} className={classes.labelIcon} size="sm" />
+                </Box>
+              </Tooltip>
+              <Tooltip title="Delete folder">
+                <Box>
+                  <FontAwesomeIcon icon={faMinusCircle} className={classes.labelIcon} size="sm" />
+                </Box>
+              </Tooltip>
             </Box>
+          )}
+          {type === 'file' && (
+            <Tooltip title="Open a file">
+              <Box>
+                <FontAwesomeIcon icon={faGlasses} className={classes.labelIcon} size="sm" onClick={() => onOpenFile(id)} />
+              </Box>
+            </Tooltip>
           )}
         </Box>
       }
