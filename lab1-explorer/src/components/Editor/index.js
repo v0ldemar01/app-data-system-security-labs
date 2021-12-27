@@ -19,7 +19,7 @@ import { useFormStyles } from 'styles/form';
 
 const Editor = ({
   fileOpen,
-  prevFile,
+  expandedFile,
   onChangeFile
 }) => {
   const [fileContent, setFileContent] = useState('');
@@ -31,10 +31,10 @@ const Editor = ({
   const commonFormClasses = useFormStyles();
 
   useEffect(() => {
-    if (prevFile && prevFile.content) {
-      setFileContent(prevFile.content);
+    if (expandedFile && expandedFile.content) {
+      setFileContent(expandedFile.content);
     }
-  }, [prevFile]);
+  }, [expandedFile]);
 
   const handleContentChange = useCallback(event => setFileContent(event.target.value), []);
 
@@ -44,8 +44,8 @@ const Editor = ({
     () => {
       onChangeFile({
         content: fileContent,
-        ...(prevFile ? {
-          fileName: prevFile?.fileName
+        ...(expandedFile ? {
+          fileName: expandedFile?.fileName
         } : {
           fileName: newFileName
         })
@@ -53,12 +53,12 @@ const Editor = ({
       setFileContent('');
       setFileName('');
     },
-    [fileContent, prevFile, newFileName, onChangeFile]
+    [fileContent, expandedFile, newFileName, onChangeFile]
   );
 
   const handleSaveFile = useCallback(
     () => {
-      if (prevFile) {
+      if (expandedFile) {
         finalSaveFile();
       } else if (!fileContent) {
         createDialog('Failed creating file', 'File cannot be empty')
@@ -66,7 +66,7 @@ const Editor = ({
         setModalOpen(true);
       }
     },
-    [prevFile, fileContent, finalSaveFile]
+    [expandedFile, fileContent, finalSaveFile]
   );
 
   const handleCloseModal = useCallback(() => setModalOpen(false), []);
@@ -126,7 +126,7 @@ const Editor = ({
               rows={42}
               value={fileContent}
               onChange={handleContentChange}
-              placeholder={prevFile ? prevFile?.content : ''}
+              placeholder={expandedFile ? expandedFile?.content : ''}
               className={classes.formTextField}
             />
             <Box mt={3.5}>

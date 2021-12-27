@@ -5,11 +5,35 @@ const initialState = {
   userCredentialsConfig: [
     {
       role: 'user',
-      password: 'userPass'
+      password: 'userPass',
+      permissions: [
+        {
+          path: 'A://',
+          allow: []
+        },
+        {
+          path: 'B://',
+          allow: ['R', 'X'] // folder: RWX, RX, null
+        }
+      ]
     },
     {
       role: 'admin',
-      password: 'adminPass'
+      password: 'adminPass',
+      permissions: [
+        {
+          path: 'A://',
+          allow: ['R', 'W', 'X']
+        },
+        {
+          path: 'B://',
+          allow: ['R', 'W', 'X']
+        },
+        {
+          path: 'C://',
+          allow: ['R', 'W', 'X']
+        },
+      ]
     }
   ],
   activeCredentials: null

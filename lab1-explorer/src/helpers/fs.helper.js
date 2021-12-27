@@ -14,43 +14,50 @@ export async function *walkAsync(dir) {
   if (!files.length) yield dir;
 };
 
-const nestIterateFs = (currentLayerStructure, layerCount, components) => {
+const nestIterateFs = (currentLayerStructure, layerCount, components, permissions) => {
   let newLayerCount = layerCount;
-  const nodeByComponent = currentLayerStructure.find(({ name }) => name === components[layerCount]);
-  if (!nodeByComponent) {
-    const nodeChild = createFsNode(components[layerCount]);
+  const componentByLayer = components[layerCount];
+  const typeComponentByLayer = path.parse(componentByLayer).ext ? 'file' : 'directory';
+  const nodeByComponent = currentLayerStructure.find(({ name }) => name === componentByLayer);
+
+  const checkPermittionsToOne = permissions.length - 1 === layerCount
+    ? permissions.find(({ path }) => componentByLayer === path[layerCount])
+    : null;
+  const conditionsToAdd = checkPermittionsToOne ?
+    checkPermittionsToOne.allow
+    && (
+      (typeComponentByLayer === 'file' && checkPermittionsToOne.allow.includes('R'))
+      || (typeComponentByLayer === 'directory' && checkPermittionsToOne.allow.includes('R') && checkPermittionsToOne.allow.includes('X'))
+    ) : true;
+
+  const parentCheckPermittions = permissions
+    .find(({ path: currentPath }) => path.join(...components).includes(path.join(...currentPath)))
+  console.log(layerCount, checkPermittionsToOne, conditionsToAdd, parentCheckPermittions);
+  if (!nodeByComponent && (!checkPermittionsToOne || conditionsToAdd)) {
+    const nodeChild = createFsNode(componentByLayer, typeComponentByLayer, checkPermittionsToOne, parentCheckPermittions);
     currentLayerStructure.push(nodeChild);
-  } else {
+  } else if (nodeByComponent && (!checkPermittionsToOne || conditionsToAdd)) {
     newLayerCount += 1;
     if (nodeByComponent.type === 'directory') {
       nodeByComponent.children = Array.isArray(nodeByComponent.children) ? nodeByComponent.children : [];
     }
   }
-  if (layerCount === components.length - 1) return currentLayerStructure;
-  return nestIterateFs(nodeByComponent ? nodeByComponent.children : currentLayerStructure, newLayerCount, components)
+  if (layerCount === components.length - 1 || !conditionsToAdd) return currentLayerStructure;
+  return nestIterateFs(nodeByComponent ? nodeByComponent.children : currentLayerStructure, newLayerCount, components, permissions)
 }
 
-const createFsNode = name => {
-  const type = path.parse(name).ext ? 'file' : 'directory';
-  const node = {
+const createFsNode = (name, type, checkPermittions, parentCheckPermittions) => {
+  const allow = ((checkPermittions
+    && checkPermittions?.allow
+    && checkPermittions?.allow?.includes('W')
+    && (parentCheckPermittions && parentCheckPermittions.allow?.includes('W')))
+      || (!checkPermittions && !parentCheckPermittions)) ? ['W'] : [];
+  return {
     id: v4(),
     name,
-    type
+    type,
+    allow
   };
-  return node;
-};
-
-export const createFsStructure = async () => {
-  const structure = [];
-  const dir = path.join(process.cwd(), 'fileSystem');
-  const fsComponents = [];
-  for await (const fsComponent of walkAsync(dir)) {
-    fsComponents.push(path.relative(process.cwd(), fsComponent).split(path.sep));
-  }
-  for (const fsComponent of fsComponents) {
-    nestIterateFs(structure, 0, fsComponent);
-  }
-  return structure;
 };
 
 export const getFsComponentById = (id, currentLayerStructure) => {
@@ -80,3 +87,22 @@ export const getFilePathById = (id, currentLayerStructure, filePath = '') => {
 }
 
 export const readFile = path => fs.readFile(path, 'utf-8');
+
+export const createFsStructure = async (permissions = []) => {
+  const structure = [];
+  const rootFolder = 'fileSystem';
+  const dir = path.join(process.cwd(), rootFolder);
+  const fsComponents = [];
+  for await (const fsComponent of walkAsync(dir)) {
+    fsComponents.push(path.relative(process.cwd(), fsComponent));
+  }
+  const permissionsWithRelativePath = permissions.map(permission => ({
+    ...permission,
+    path: path.join(rootFolder, ...permission.path.split('://')).split(path.sep)
+  }));
+  for (const fsComponent of fsComponents) {
+    const fsSplitComponent = fsComponent.split(path.sep);
+    nestIterateFs(structure, 0, fsSplitComponent, permissionsWithRelativePath);
+  }
+  return structure;
+};

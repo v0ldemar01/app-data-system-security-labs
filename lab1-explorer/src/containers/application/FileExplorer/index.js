@@ -1,21 +1,28 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { useSelector } from 'react-redux';
 import NavigationArea from 'components/NavigationArea';
 import Editor from 'components/Editor';
 import AppLogo from '../AppLogo';
 import { Box } from '@material-ui/core';
-import { walkAsync } from 'helpers/fs.helper';
+
 
 const FileExplorer = () => {
-  const [fileOpen, setFileOpen] = useState(false);
-  const [selectedFile, setSelectedFile] = useState();
+  const { structure, loading, expandedFile } = useSelector(state => ({
+    structure: state.fs.structure,
+    loading: state.fs.loading,
+    expandedFile: state.fs.expandedFile
+  }));
 
   return (
     <AppLogo>
       <Box display="flex">
-        <NavigationArea />
+        <NavigationArea
+          structure={structure}
+          loading={loading}
+        />
         <Editor
-          fileOpen={fileOpen}
-          prevFile={selectedFile}
+          fileOpen={Boolean(expandedFile)}
+          expandedFile={expandedFile}
         />
       </Box>
     </AppLogo>

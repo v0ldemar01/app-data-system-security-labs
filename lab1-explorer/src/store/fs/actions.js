@@ -5,7 +5,7 @@ import { ActionType } from './common';
 export const loadStructure = createAsyncThunk(
   ActionType.LOAD_STRUCTURE,
   async permissions => {
-    const structure = await createFsStructure();
+    const structure = await createFsStructure(permissions);
     return { structure };
   }
 );
@@ -25,7 +25,11 @@ export const toggleExpandedFile = createAsyncThunk(
     } else {
       const filePath = getFilePathById(fileId, structure);
       if (!filePath) resultFile = {};
-      resultFile = await readFile(filePath);
+      const fileContent = await readFile(filePath);
+      resultFile = {
+        id: fileId,
+        content: fileContent
+      };
     }
     return { expandedFile: resultFile };
   }

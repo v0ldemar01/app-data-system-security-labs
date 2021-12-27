@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { fsActionCreator } from 'store/actions';
 import { useCommonStyles } from 'components/styles/common';
-import { createFsStructure } from 'helpers/fs.helper';
+import FsTreeItem from 'components/FsTreeItem';
 import clsx from 'clsx';
 import { Box, Paper } from '@material-ui/core';
 import { TreeView, TreeItem } from '@material-ui/lab';
@@ -9,38 +11,51 @@ import {
   ChevronRight as ChevronRightIcon
 } from '@material-ui/icons';
 
-
 import { useStyles } from './classes';
-import { useEffect } from 'react';
 
 
-(async () => {
-  await createFsStructure();
-})()
-const NavigationArea = () => {
-  const [fsStructure, setFsStructure] = useState([]);
-  console.log('fsStructure', fsStructure);
+const NavigationArea = ({
+  structure,
+  loading
+}) => {
+  const dispatch = useDispatch();
+  console.log('fsStructure', structure);
+  const { permissions } = useSelector(state => ({
+    permissions: state.user.activeCredentials.permissions
+  }));
+
   const classes = useStyles();
   const commonClasses = useCommonStyles();
 
-  useEffect(() => {
-    createFsStructure().then(setFsStructure)
-  }, []);
+  const loadFsStructure = useCallback(
+    () => dispatch(fsActionCreator.loadStructure(permissions)),
+    [permissions, dispatch]
+  );
 
-  const renderTree = (nodes) => (
-    <TreeItem key={nodes.id} nodeId={nodes.id} label={nodes.name}>
-      {Array.isArray(nodes.children) ? nodes.children.map((node) => renderTree(node)) : null}
-    </TreeItem>
+  useEffect(() => {
+    loadFsStructure();
+  }, [permissions]);
+
+  const renderTree = (node, layer = 0) => (
+    <FsTreeItem key={node.id} layer={layer} {...node}>
+      {Array.isArray(node.children) ? node.children.map(childNode => renderTree(childNode, layer + 1)) : null}
+    </FsTreeItem>
   );
 
   return (
     <Box display="flex" flex={1} justifyContent="center">
       <Paper className={clsx(commonClasses.paper, classes.paper)}>
-        <TreeView
-          defaultCollapseIcon={<ExpandMoreIcon />}
-          defaultExpandIcon={<ChevronRightIcon />}
-          defaultExpanded={['root']}
-        />
+        {loading ? (
+          <Box />
+        ) : (
+          <TreeView
+            defaultCollapseIcon={<ExpandMoreIcon />}
+            defaultExpandIcon={<ChevronRightIcon />}
+            defaultExpanded={['root']}
+          >
+            {structure.map(node => renderTree(node))}
+          </TreeView>
+        )}
       </Paper>
     </Box>
   );
