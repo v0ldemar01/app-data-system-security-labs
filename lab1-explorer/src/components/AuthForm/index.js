@@ -1,9 +1,9 @@
-import React, { useCallback, useContext, useState } from 'react';
+import React, { useCallback, useState } from 'react';
+import { useDispatch } from 'react-redux';
+import { userActionCreator } from 'store/actions';
 import { Field, Form, Formik } from 'formik';
 import { initialValues, validationSchema } from './form';
 import { convertFirstCharToUpper } from 'helpers/character.helper';
-import { createDialog } from 'helpers/dialog.helper';
-import { MyContext } from 'providers/MyProvider';
 import clsx from 'clsx';
 import Select, { components as Components } from 'react-select';
 import makeAnimated from 'react-select/animated';
@@ -16,7 +16,7 @@ import {
 
 import { useFormStyles } from 'styles/form';
 import { selectStyles } from 'styles/select';
-import { userCredentialsConfig } from './config';
+
 
 const roleOptions = ['admin', 'user']
   .map(value => ({
@@ -28,33 +28,24 @@ const animatedComponents = makeAnimated();
 
 const AuthForm = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const {onAuth} = useContext(MyContext);
+
+  const dispatch = useDispatch();
 
   const commonFormClasses = useFormStyles();
   const theme = useTheme();
 
   const togglePasswordVisibility = useCallback(() => setShowPassword(prev => !prev), []);
 
-  const handleAuth = useCallback(
-    user => {
-      const existingUser = userCredentialsConfig
-        .find(({ role, password }) => role === user.role && password === user.password);
-      if (!existingUser) {
-        createDialog('Failed authorization into system', 'Incorrect password')
-      }
-      onAuth(existingUser);
-    },
-    []
+  const handleAuthUser = useCallback(
+    user => dispatch(userActionCreator.authUser(user)),
+    [dispatch]
   );
 
   return (
     <Formik
       initialValues={initialValues}
       validationSchema={validationSchema}
-      onSubmit={(values, { setSubmitting }) => {
-        handleAuth(values);
-        setSubmitting(false);
-      }}
+      onSubmit={(values, { setSubmitting }) => handleAuthUser(values)}
     >
       {({ values, errors, touched, handleSubmit, handleChange, setFieldValue }) => (
         <Form onSubmit={handleSubmit}>

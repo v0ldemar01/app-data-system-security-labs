@@ -115,7 +115,7 @@ const Editor = ({
     <Box display="flex" flex={2.5} justifyContent="center">
       <Paper elevation={3} className={commonClasses.paper}>
         {modalSetFileName}
-        {!fileOpen ? (
+        {fileOpen ? (
           <Box p={4}>
             <TextField
               id="file-content"

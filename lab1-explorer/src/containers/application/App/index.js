@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
+import { Provider } from 'react-redux';
 import { HashRouter, Redirect, Switch } from 'react-router-dom';
+import store from 'store/store';
 import { MyContext } from 'providers/MyProvider';
 import Authorization from 'containers/application/Authorization';
 import FileExplorer from 'containers/application/FileExplorer';
@@ -10,24 +12,18 @@ import { MuiThemeProvider } from '@material-ui/core';
 
 import { theme } from 'styles/theme';
 
-const App = () => {
-  const [auth, setAuth] = useState();
-
-  return (
+const App = () => (
+  <Provider store={store}>
     <MuiThemeProvider theme={theme}>
-      <MyContext.Provider value={{
-        onAuth: setAuth
-      }}>
-        <HashRouter>
-          <Switch>
-            <PublicRoute exact isAuthorized={Boolean(auth)} path={authRoute} component={Authorization} />
-            <PrivateRoute exact isAuthorized={Boolean(auth)} path={homeRoute} component={FileExplorer} />
-            <Redirect to={authRoute} />
-          </Switch>
-        </HashRouter>
-      </MyContext.Provider>
+      <HashRouter>
+        <Switch>
+          <PublicRoute exact path={authRoute} component={Authorization} />
+          <PrivateRoute exact path={homeRoute} component={FileExplorer} />
+          <Redirect to={authRoute} />
+        </Switch>
+      </HashRouter>
     </MuiThemeProvider>
-  );
-}
+  </Provider>
+);
 
 export default App;

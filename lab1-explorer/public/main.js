@@ -3,7 +3,11 @@ const { app, BrowserWindow } = require('electron');
 const path = require('path');
 const isDev = require('electron-is-dev');
 const { enable: enableWebContents } = require('@electron/remote/main');
-const { default: installExtension, REACT_DEVELOPER_TOOLS } = require('electron-devtools-installer');
+const {
+  default: installExtension,
+  REACT_DEVELOPER_TOOLS,
+  REDUX_DEVTOOLS
+} = require('electron-devtools-installer');
 
 require('@electron/remote/main').initialize();
 
@@ -24,16 +28,18 @@ function createWindow() {
       : `file://${path.join(__dirname, '../build/index.html')}`
   );
   if (isDev) {
-    win.webContents.openDevTools({mode: 'detach'});
+    installExtension([REDUX_DEVTOOLS, REACT_DEVELOPER_TOOLS])
+      .then((name) => console.log(`Added Extension:  ${name}`))
+      .catch((err) => console.log('An error occurred: ', err));
+    win.webContents.on('did-frame-finish-load', () => {
+      win.webContents.closeDevTools();
+      win.webContents.once('devtools-opened', () => win.focus());
+      win.webContents.openDevTools();
+    });
   }
 }
 
-app.whenReady().then(() => {
-  createWindow();
-  installExtension(REACT_DEVELOPER_TOOLS)
-    .then((name) => console.log(`Added Extension:  ${name}`))
-     .catch((err) => console.log('An error occurred: ', err));
-});
+app.whenReady().then(() => createWindow());
 
 app.on('window-all-closed', function () {
   if (process.platform !== 'darwin') {
