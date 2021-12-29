@@ -5,6 +5,7 @@ import {
   NestFastifyApplication,
 } from '@nestjs/platform-fastify';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import fastifyCookie from 'fastify-cookie';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 
@@ -17,6 +18,8 @@ async function bootstrap() {
   );
   const configService = app.get(ConfigService);
   const PORT = configService.get<number>('PORT');
+  const COOKIE_SECRET = configService.get<string>('COOKIE_SECRET');
+
   const config = new DocumentBuilder()
     .setTitle('My some project')
     .setDescription('The project API description')
@@ -25,6 +28,9 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/swagger', app, document);
 
+  app.register(fastifyCookie, {
+    secret: COOKIE_SECRET,
+  });
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,
