@@ -14,7 +14,7 @@ export class UserDto {
 
   @IsNotEmpty()
   @IsNumber()
-  attemptAuthNumber: number;
+  attemptErrorAuthNumber: number;
 
   @IsNotEmpty()
   @IsIn(['user', 'admin'])

@@ -12,6 +12,7 @@ import { JwtRefreshTokenStrategy } from './strategies/jwt-refresh.stategy';
 import { RefreshQuestionStrategy } from 'auth/strategies/refresh-question.strategy';
 import { SessionModule } from 'session/session.module';
 import { QuestionModule } from 'question/question.module';
+import { SystemLogModule } from 'system-log/system-log.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { QuestionModule } from 'question/question.module';
     UserModule,
     SessionModule,
     QuestionModule,
+    SystemLogModule,
   ],
   controllers: [AuthController],
   providers: [

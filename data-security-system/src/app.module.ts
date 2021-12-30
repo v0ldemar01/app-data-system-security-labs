@@ -8,6 +8,7 @@ import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { SessionModule } from './session/session.module';
 import { QuestionModule } from './question/question.module';
+import { SystemLogModule } from './system-log/system-log.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { QuestionModule } from './question/question.module';
     AuthModule,
     SessionModule,
     QuestionModule,
+    SystemLogModule,
   ],
   controllers: [AppController],
   providers: [AppService],

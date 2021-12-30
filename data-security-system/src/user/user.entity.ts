@@ -2,6 +2,7 @@ import { Column, Entity, OneToMany } from 'typeorm';
 import { AbstractWithIdEntity } from 'data/entities/abstract.entity';
 import { Session } from 'session/session.entity';
 import { Question } from 'question/question.entity';
+import { SystemLog } from 'system-log/system-log.entity';
 
 @Entity()
 export class User extends AbstractWithIdEntity {
@@ -14,8 +15,8 @@ export class User extends AbstractWithIdEntity {
   @Column({ default: 'user' })
   role: string;
 
-  @Column()
-  attemptAuthNumber: number;
+  @Column({ default: 0 })
+  attemptErrorAuthNumber: number;
 
   @Column({ default: 'active' })
   status: string;
@@ -29,4 +30,9 @@ export class User extends AbstractWithIdEntity {
     cascade: true,
   })
   questions: Question[];
+
+  @OneToMany(() => SystemLog, (systemLog) => systemLog.user, {
+    cascade: true,
+  })
+  systemLogs: SystemLog[];
 }

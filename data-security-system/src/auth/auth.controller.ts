@@ -18,12 +18,14 @@ import RefreshQuestionGuard from 'auth/guards/refresh-question.guard';
 import { AuthUser } from 'user/user.decorator';
 import { UserDto } from 'user/dtos';
 import { QuestionAnswerDto } from 'question/dtos';
+import { SystemLogService } from 'system-log/system-log.service';
 
 @Controller('auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly questionService: QuestionService,
+    private readonly systemLogService: SystemLogService,
   ) {}
 
   @Post('login')
@@ -34,6 +36,10 @@ export class AuthController {
       await this.authService.manageJwtTokensSessions(user);
     const cookie = await this.authService.getCookieWithJwtAccessToken(
       accessToken,
+    );
+    await this.systemLogService.addSystemLog(
+      { level: 'ok', message: 'Login is succeed' },
+      user.id,
     );
     res.header('Set-Cookie', cookie);
     res.send({ refreshToken });
@@ -49,6 +55,10 @@ export class AuthController {
       await this.authService.manageJwtTokensSessions(user);
     const cookie = await this.authService.getCookieWithJwtAccessToken(
       accessToken,
+    );
+    await this.systemLogService.addSystemLog(
+      { level: 'ok', message: 'Refresh token is succeed' },
+      user.id,
     );
     res.header('Set-Cookie', cookie);
     res.send({ refreshToken });
@@ -70,6 +80,10 @@ export class AuthController {
     const cookie = await this.authService.getCookieWithJwtAccessToken(
       accessToken,
     );
+    await this.systemLogService.addSystemLog(
+      { level: 'ok', message: 'Refresh session by question is succeed' },
+      user.id,
+    );
     res.header('Set-Cookie', cookie);
     res.send({ refreshToken });
   }
@@ -81,6 +95,10 @@ export class AuthController {
     @Res() res: FastifyReply,
   ) {
     const cookie = this.authService.getCookieForLogOut();
+    await this.systemLogService.addSystemLog(
+      { level: 'ok', message: 'Logout is succeed' },
+      user.id,
+    );
     res.header('Set-Cookie', cookie);
     res.send({ success: true });
   }
