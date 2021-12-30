@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, IsUUID } from 'class-validator';
+import { IsEmail, IsIn, IsNotEmpty, IsNumber, IsUUID } from 'class-validator';
 
 export class UserDto {
   @IsNotEmpty()
@@ -11,4 +11,12 @@ export class UserDto {
 
   @IsNotEmpty()
   role: string;
+
+  @IsNotEmpty()
+  @IsNumber()
+  attemptAuthNumber: number;
+
+  @IsNotEmpty()
+  @IsIn(['user', 'admin'])
+  status: string;
 }

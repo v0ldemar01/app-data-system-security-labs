@@ -9,7 +9,9 @@ import { AuthService } from 'auth/auth.service';
 import { JwtStrategy } from 'auth/strategies/jwt.strategy';
 import { LocalStrategy } from 'auth/strategies/local.strategy';
 import { JwtRefreshTokenStrategy } from './strategies/jwt-refresh.stategy';
+import { RefreshQuestionStrategy } from 'auth/strategies/refresh-question.strategy';
 import { SessionModule } from 'session/session.module';
+import { QuestionModule } from 'question/question.module';
 
 @Module({
   imports: [
@@ -22,8 +24,15 @@ import { SessionModule } from 'session/session.module';
     PassportModule.register({ defaultStrategy: 'jwt' }),
     UserModule,
     SessionModule,
+    QuestionModule,
   ],
   controllers: [AuthController],
-  providers: [JwtStrategy, AuthService, LocalStrategy, JwtRefreshTokenStrategy],
+  providers: [
+    JwtStrategy,
+    AuthService,
+    LocalStrategy,
+    JwtRefreshTokenStrategy,
+    RefreshQuestionStrategy,
+  ],
 })
 export class AuthModule {}

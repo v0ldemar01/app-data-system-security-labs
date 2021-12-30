@@ -7,6 +7,7 @@ import { typeOrmConfigAsync } from './config/typeorm.config';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { SessionModule } from './session/session.module';
+import { QuestionModule } from './question/question.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { SessionModule } from './session/session.module';
     UserModule,
     AuthModule,
     SessionModule,
+    QuestionModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -91,9 +91,36 @@ export class UserService {
   }
 
   async checkIfUserAlreadyExists(email: string): Promise<void> {
-    const existingUser = await this.findOne({ where: { email } });
+    const existingUser = await this.findOne({
+      where: { email, status: 'active' },
+    });
     if (existingUser) {
       throw new ConflictException(USER_ALREADY_EXISTS);
     }
+  }
+
+  async increaseErrorAuthAttempt(userId: string): Promise<void> {
+    const user = await this.findOne({ where: { id: userId } });
+    await this.userRepository.update(userId, {
+      ...user,
+      attemptAuthNumber: user.attemptAuthNumber + 1,
+    });
+  }
+
+  async getErrorAuthAttemptNumber(
+    userId: string,
+  ): Promise<{ attemptAuthNumber: number }> {
+    return this.findOne({
+      select: ['attemptAuthNumber'],
+      where: { id: userId },
+    });
+  }
+
+  async setUserBlocked(userId: string) {
+    const user = await this.findOne({ where: { id: userId } });
+    await this.userRepository.update(userId, {
+      ...user,
+      status: 'blocked',
+    });
   }
 }
