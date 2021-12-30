@@ -18,12 +18,14 @@ import {
   USER_NOT_FOUND_BY_EMAIL_ERROR,
   USER_NOT_FOUND_BY_ID_ERROR,
 } from 'user/constants/user.constant';
+import { SystemLogService } from 'system-log/system-log.service';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    private readonly systemLogService: SystemLogService,
   ) {}
 
   async getByEmail(email: string) {
@@ -31,6 +33,13 @@ export class UserService {
     if (user) {
       return user;
     }
+    await this.systemLogService.addSystemLog(
+      {
+        level: 'error',
+        message: USER_NOT_FOUND_BY_EMAIL_ERROR,
+      },
+      null,
+    );
     throw new UnauthorizedException(USER_NOT_FOUND_BY_EMAIL_ERROR);
   }
 
@@ -39,6 +48,13 @@ export class UserService {
     if (entity) {
       return UserMapper.mapEntityToDTO(entity);
     }
+    await this.systemLogService.addSystemLog(
+      {
+        level: 'error',
+        message: USER_NOT_FOUND_BY_ID_ERROR,
+      },
+      id,
+    );
     throw new HttpException(USER_NOT_FOUND_BY_ID_ERROR, HttpStatus.NOT_FOUND);
   }
 
@@ -67,6 +83,13 @@ export class UserService {
     if (entity) {
       return UserMapper.mapEntityToDTO(entity);
     }
+    await this.systemLogService.addSystemLog(
+      {
+        level: 'error',
+        message: SESSION_NOT_FOUND_BY_TOKENS_ERROR,
+      },
+      userId,
+    );
     throw new UnauthorizedException(SESSION_NOT_FOUND_BY_TOKENS_ERROR);
   }
 
@@ -89,6 +112,13 @@ export class UserService {
       where: { email, status: 'active' },
     });
     if (existingUser) {
+      await this.systemLogService.addSystemLog(
+        {
+          level: 'error',
+          message: USER_ALREADY_EXISTS,
+        },
+        existingUser.id,
+      );
       throw new ConflictException(USER_ALREADY_EXISTS);
     }
   }
@@ -97,15 +127,15 @@ export class UserService {
     const user = await this.findOne({ where: { id: userId } });
     await this.userRepository.update(userId, {
       ...user,
-      attemptAuthNumber: user.attemptAuthNumber + 1,
+      attemptErrorAuthNumber: user.attemptErrorAuthNumber + 1,
     });
   }
 
   async getErrorAuthAttemptNumber(
     userId: string,
-  ): Promise<{ attemptAuthNumber: number }> {
+  ): Promise<{ attemptErrorAuthNumber: number }> {
     return this.findOne({
-      select: ['attemptAuthNumber'],
+      select: ['attemptErrorAuthNumber'],
       where: { id: userId },
     });
   }

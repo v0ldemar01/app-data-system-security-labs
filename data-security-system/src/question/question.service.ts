@@ -7,6 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Question } from 'question/question.entity';
 import { UserService } from 'user/user.service';
+import { SystemLogService } from 'system-log/system-log.service';
 import { QuestionMapper } from 'question/mappers/user.mapper';
 import {
   CreateQuestionDto,
@@ -19,13 +20,13 @@ import {
   QUESTION_ALREADY_EXISTS,
 } from 'question/constants/question.constant';
 import { IGetConfig } from 'common/models';
-
 @Injectable()
 export class QuestionService {
   constructor(
     @InjectRepository(Question)
     private readonly questionRepository: Repository<Question>,
     private readonly userService: UserService,
+    private readonly systemLogService: SystemLogService,
   ) {}
 
   async getQuestions(config: IGetConfig): Promise<QuestionDto[]> {
@@ -55,6 +56,13 @@ export class QuestionService {
       where: { questionText, userId },
     });
     if (existingUser) {
+      await this.systemLogService.addSystemLog(
+        {
+          level: 'error',
+          message: QUESTION_ALREADY_EXISTS,
+        },
+        userId,
+      );
       throw new ConflictException(QUESTION_ALREADY_EXISTS);
     }
   }
@@ -67,15 +75,29 @@ export class QuestionService {
       where: { questionText, userId },
     });
     if (existingQuestion.correctAnswer !== userAnswer) {
-      const { attemptAuthNumber } =
+      const { attemptErrorAuthNumber } =
         await this.userService.getErrorAuthAttemptNumber(userId);
-      if (attemptAuthNumber >= 3) {
+      if (attemptErrorAuthNumber >= 3) {
         await this.userService.setUserBlocked(userId);
+        await this.systemLogService.addSystemLog(
+          {
+            level: 'error',
+            message: INCORRECT_ANSWER_QUESTION_ATTEMPTS_ENDED,
+          },
+          userId,
+        );
         throw new UnauthorizedException(
           INCORRECT_ANSWER_QUESTION_ATTEMPTS_ENDED,
         );
       }
       await this.userService.increaseErrorAuthAttempt(userId);
+      await this.systemLogService.addSystemLog(
+        {
+          level: 'error',
+          message: INCORRECT_ANSWER_QUESTION,
+        },
+        userId,
+      );
       throw new UnauthorizedException(INCORRECT_ANSWER_QUESTION);
     }
   }

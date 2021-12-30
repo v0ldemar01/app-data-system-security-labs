@@ -12,6 +12,7 @@ import { User } from 'user/user.entity';
 import { UserService } from 'user/user.service';
 import { UserDto } from 'user/dtos';
 import { SessionService } from 'session/session.service';
+import { SystemLogService } from 'system-log/system-log.service';
 
 @Injectable()
 export class AuthService {
@@ -20,17 +21,30 @@ export class AuthService {
     private readonly sessionService: SessionService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly systemLogService: SystemLogService,
   ) {}
 
   async getAuthenticatedUser(email: string, password: string): Promise<User> {
     const user = await this.userService.getByEmail(email);
     if (!user) {
+      await this.systemLogService.addSystemLog(
+        { level: 'error', message: USER_NOT_FOUND_ERROR },
+        null,
+      );
       throw new UnauthorizedException(USER_NOT_FOUND_ERROR);
     }
     const isCorrectPassword = await compare(password, user.password);
     if (!isCorrectPassword) {
+      await this.systemLogService.addSystemLog(
+        { level: 'error', message: WRONG_PASSWORD_ERROR },
+        null,
+      );
       throw new UnauthorizedException(WRONG_PASSWORD_ERROR);
     }
+    await this.systemLogService.addSystemLog(
+      { level: 'ok', message: `${user.email} is authorized` },
+      null,
+    );
     return user;
   }
 
