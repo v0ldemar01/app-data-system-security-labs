@@ -3,6 +3,7 @@ import {
   HttpException,
   HttpStatus,
   Injectable,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Session } from 'session/session.entity';
@@ -23,23 +24,18 @@ export class UserService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
-    @InjectRepository(Session)
-    private readonly sessionRepository: Repository<Session>,
   ) {}
 
   async getByEmail(email: string) {
-    const user = await this.userRepository.findOne({ email });
+    const user = await this.userRepository.findOne({ email, status: 'active' });
     if (user) {
       return user;
     }
-    throw new HttpException(
-      USER_NOT_FOUND_BY_EMAIL_ERROR,
-      HttpStatus.NOT_FOUND,
-    );
+    throw new UnauthorizedException(USER_NOT_FOUND_BY_EMAIL_ERROR);
   }
 
   async getById(id: string) {
-    const entity = await this.userRepository.findOne({ id });
+    const entity = await this.userRepository.findOne({ id, status: 'active' });
     if (entity) {
       return UserMapper.mapEntityToDTO(entity);
     }
@@ -55,6 +51,7 @@ export class UserService {
       .createQueryBuilder('user')
       .select(['id'])
       .where('user.id = :userId', { userId })
+      .andWhere('user.status = :status', { status: 'active' })
       .andWhere((qb) => {
         const subQuerySessionId = qb
           .subQuery()
@@ -70,10 +67,7 @@ export class UserService {
     if (entity) {
       return UserMapper.mapEntityToDTO(entity);
     }
-    throw new HttpException(
-      SESSION_NOT_FOUND_BY_TOKENS_ERROR,
-      HttpStatus.NOT_FOUND,
-    );
+    throw new UnauthorizedException(SESSION_NOT_FOUND_BY_TOKENS_ERROR);
   }
 
   async findOne(where: FindOneOptions<User>): Promise<UserDto> {
