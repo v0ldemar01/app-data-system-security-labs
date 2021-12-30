@@ -1,6 +1,6 @@
 import { Column, Entity, OneToMany } from 'typeorm';
 import { AbstractWithIdEntity } from 'data/entities/abstract.entity';
-import { Session } from 'data/entities/session.entity';
+import { Session } from 'session/session.entity';
 
 @Entity()
 export class User extends AbstractWithIdEntity {

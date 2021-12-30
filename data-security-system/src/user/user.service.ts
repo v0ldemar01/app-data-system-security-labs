@@ -5,12 +5,18 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Session } from 'data/entities/session.entity';
+import { Session } from 'session/session.entity';
 import { FindOneOptions, Repository } from 'typeorm';
 import { genSalt, hash } from 'bcryptjs';
 import { User } from 'user/user.entity';
 import { CreateUserDto, UserDto } from 'user/dtos';
-import { UserMapper } from './mappers/user.mapper';
+import { UserMapper } from 'user/mappers/user.mapper';
+import {
+  SESSION_NOT_FOUND_BY_TOKENS_ERROR,
+  USER_ALREADY_EXISTS,
+  USER_NOT_FOUND_BY_EMAIL_ERROR,
+  USER_NOT_FOUND_BY_ID_ERROR,
+} from 'user/constants/user.constant';
 
 @Injectable()
 export class UserService {
@@ -27,7 +33,7 @@ export class UserService {
       return user;
     }
     throw new HttpException(
-      'User with this email does not exist',
+      USER_NOT_FOUND_BY_EMAIL_ERROR,
       HttpStatus.NOT_FOUND,
     );
   }
@@ -37,10 +43,7 @@ export class UserService {
     if (entity) {
       return UserMapper.mapEntityToDTO(entity);
     }
-    throw new HttpException(
-      'User with this id does not exist',
-      HttpStatus.NOT_FOUND,
-    );
+    throw new HttpException(USER_NOT_FOUND_BY_ID_ERROR, HttpStatus.NOT_FOUND);
   }
 
   async getUserIfTokensMatches(
@@ -48,26 +51,27 @@ export class UserService {
     accessToken: string,
     refreshToken: string,
   ) {
-    const entity = await this.sessionRepository
+    const entity = await this.userRepository
       .createQueryBuilder('user')
       .select(['id'])
       .where('user.id = :userId', { userId })
       .andWhere((qb) => {
         const subQuerySessionId = qb
           .subQuery()
-          .select('session.id')
+          .select('session.userId')
           .from(Session, 'session')
           .where('session.accessToken = :accessToken', { accessToken })
-          .andWhere('user.refreshToken = :refreshToken', { refreshToken })
+          .andWhere('session.refreshToken = :refreshToken', { refreshToken })
           .getQuery();
-        return 'user.sessionId IN ' + subQuerySessionId;
+        return 'user.id IN ' + subQuerySessionId;
       })
       .getRawOne();
+
     if (entity) {
       return UserMapper.mapEntityToDTO(entity);
     }
     throw new HttpException(
-      'Session for current user does not exist',
+      SESSION_NOT_FOUND_BY_TOKENS_ERROR,
       HttpStatus.NOT_FOUND,
     );
   }
@@ -89,7 +93,7 @@ export class UserService {
   async checkIfUserAlreadyExists(email: string): Promise<void> {
     const existingUser = await this.findOne({ where: { email } });
     if (existingUser) {
-      throw new ConflictException('User already exist');
+      throw new ConflictException(USER_ALREADY_EXISTS);
     }
   }
 }

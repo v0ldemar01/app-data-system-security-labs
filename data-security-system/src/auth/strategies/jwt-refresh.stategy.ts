@@ -17,9 +17,7 @@ export class JwtRefreshTokenStrategy extends PassportStrategy(
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
-        (request: FastifyRequest) => {
-          return (request?.body as any)?.refreshToken;
-        },
+        (request: FastifyRequest) => (request?.query as any)?.refreshToken,
       ]),
       secretOrKey: configService.get('JWT_REFRESH_TOKEN_SECRET'),
       passReqToCallback: true,
@@ -28,7 +26,7 @@ export class JwtRefreshTokenStrategy extends PassportStrategy(
 
   async validate(request: FastifyRequest, { id }: Pick<UserDto, 'id'>) {
     const accessToken = request?.cookies?.Authentication;
-    const refreshToken = (request?.body as any)?.refreshToken;
+    const refreshToken = (request?.query as any)?.refreshToken;
     return this.userService.getUserIfTokensMatches(
       id,
       accessToken,

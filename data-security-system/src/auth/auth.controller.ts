@@ -24,26 +24,26 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   @HttpCode(HttpStatus.OK)
   async login(@AuthUser() user: UserDto, @Res() res: FastifyReply) {
+    const { accessToken, refreshToken } =
+      await this.authService.manageJwtTokensSessions(user);
     const cookie = await this.authService.getCookieWithJwtAccessToken(
-      user.id,
-      user.role,
+      accessToken,
     );
-    const refreshToken = await this.authService.getJwtRefreshToken(user.id);
     res.header('Set-Cookie', cookie);
     res.send({ refreshToken });
   }
 
   @UseGuards(JwtRefreshGuard)
   @Get('refresh-token')
-  refresh(
+  async refresh(
     @AuthUser() user: Pick<UserDto, 'id' | 'role'>,
     @Res() res: FastifyReply,
   ) {
-    const cookie = this.authService.getCookieWithJwtAccessToken(
-      user.id,
-      user.role,
+    const { accessToken, refreshToken } =
+      await this.authService.manageJwtTokensSessions(user);
+    const cookie = await this.authService.getCookieWithJwtAccessToken(
+      accessToken,
     );
-    const refreshToken = this.authService.getJwtRefreshToken(user.id);
     res.header('Set-Cookie', cookie);
     res.send({ refreshToken });
   }

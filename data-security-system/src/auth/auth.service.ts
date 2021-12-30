@@ -1,4 +1,8 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { compare } from 'bcryptjs';
 import {
   USER_NOT_FOUND_ERROR,
@@ -6,13 +10,14 @@ import {
 } from 'auth/constants/auth.constants';
 import { User } from 'user/user.entity';
 import { UserService } from 'user/user.service';
-import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
+import { UserDto } from 'user/dtos';
+import { SessionService } from 'session/session.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly userService: UserService,
+    private readonly sessionService: SessionService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
   ) {}
@@ -29,11 +34,15 @@ export class AuthService {
     return user;
   }
 
-  async getCookieWithJwtAccessToken(id: string, role: string) {
-    const token = await this.jwtService.signAsync({ id, role });
+  async getCookieWithJwtAccessToken(token: string) {
     return `Authentication=${token}; HttpOnly; Path=/; Max-Age=${
       this.configService.get('JWT_EXPIRATION_TIME') / 1000
     }`;
+  }
+
+  async getJwtAccessToken(id: string, role: string) {
+    const accessToken = await this.jwtService.signAsync({ id, role });
+    return accessToken;
   }
 
   async getJwtRefreshToken(id: string) {
@@ -45,6 +54,29 @@ export class AuthService {
       },
     );
     return refreshToken;
+  }
+
+  async manageJwtTokensSessions(user: Pick<UserDto, 'id' | 'role'>) {
+    const accessToken = await this.getJwtAccessToken(user.id, user.role);
+    const refreshToken = await this.getJwtRefreshToken(user.id);
+    const prevSession = await this.sessionService.getSessionByUserId(user.id);
+    if (prevSession) {
+      await this.sessionService.updateUserSession(prevSession.id, {
+        ...prevSession,
+        accessToken,
+        refreshToken,
+      });
+    } else {
+      await this.sessionService.createUserSession({
+        accessToken,
+        refreshToken,
+        user,
+      });
+    }
+    return {
+      accessToken,
+      refreshToken,
+    };
   }
 
   async getCookieForLogOut() {

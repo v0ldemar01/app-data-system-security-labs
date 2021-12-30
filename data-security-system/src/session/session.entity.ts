@@ -7,11 +7,8 @@ export class Session extends AbstractWithIdEntity {
   @Column()
   accessToken: string;
 
-  @Column({ type: 'uuid' })
+  @Column()
   refreshToken: string;
-
-  @Column({ type: 'bigint' })
-  expiresIn: number;
 
   @RelationId((session: Session) => session.user)
   @Column()
