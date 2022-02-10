@@ -1,14 +1,44 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
+import { decrypt, encrypt } from 'helpers/crypto.helper';
 import { createErrorDialog, createSuccessDialog } from 'helpers/dialog.helper';
-import { createFsStructure, getFilePathById, getFsComponentById, readFile, writeFile } from 'helpers/fs.helper';
+import { createFileByParent, createFsStructure, getFilePathById, getFsComponentById, readFile, writeFile } from 'helpers/fs.helper';
 import { ActionType } from './common';
 
 export const loadStructure = createAsyncThunk(
   ActionType.LOAD_STRUCTURE,
-  async permissions => {
+  async (_, { getState }) => {
+    const {
+      user: {
+        activeCredentials: {
+          permissions
+        }
+      }
+    } = getState();
     const structure = await createFsStructure(permissions);
     return { structure };
   }
+);
+
+export const createFile = createAsyncThunk(
+  ActionType.CREATE_FILE,
+  async (data, { getState }) => {
+    const {
+      fs: {
+        structure
+      },
+      user: {
+        activeCredentials: {
+          permissions
+        }
+      }
+    } = getState();
+    await createFileByParent(structure, permissions, data);
+  }
+);
+
+export const createFolder = createAsyncThunk(
+  ActionType.CREATE_DIRECTORY,
+  config => config
 );
 
 export const toggleExpandedFile = createAsyncThunk(
@@ -26,9 +56,10 @@ export const toggleExpandedFile = createAsyncThunk(
       const { allow } = getFsComponentById(fileId, structure);
       if (filePath) {
         const fileContent = await readFile(filePath);
+        const decryptedContent = await decrypt(fileContent);
         resultFile = {
           id: fileId,
-          content: fileContent,
+          content: decryptedContent,
           allow
         };
       }
@@ -51,7 +82,8 @@ export const changeFileContent = createAsyncThunk(
       return rejectWithValue();
     }
     const filePath = getFilePathById(expandedFile.id, structure);
-    writeFile(filePath, newFile.content, true);
+    const encryptedContent = await encrypt(newFile.content);
+    writeFile(filePath, encryptedContent, true);
     createSuccessDialog('Update file is successful', '')
     return {};
   }

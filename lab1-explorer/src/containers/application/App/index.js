@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Provider } from 'react-redux';
 import { HashRouter, Redirect, Switch } from 'react-router-dom';
 import store from 'store/store';
-import { MyContext } from 'providers/MyProvider';
 import Authorization from 'containers/application/Authorization';
 import FileExplorer from 'containers/application/FileExplorer';
 import PrivateRoute from 'containers/route/PrivateRoute';

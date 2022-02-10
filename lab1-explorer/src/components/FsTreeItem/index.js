@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { TreeItem } from '@material-ui/lab';
 import { Box, Tooltip, Typography } from '@material-ui/core';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -8,9 +8,10 @@ import {
   faFolder,
   faUserEdit,
   faMinusCircle,
-  faPlus,
+  faFileSignature,
   faFile,
-  faGlasses
+  faGlasses,
+  faFolderPlus
 } from '@fortawesome/free-solid-svg-icons';
 
 import { useStyles } from './classes';
@@ -22,6 +23,7 @@ const FsTreeItem = ({
   type,
   allow,
   onOpenFile,
+  onOpenNewFile,
   ...other
 }) => {
   const classes = useStyles();
@@ -29,6 +31,22 @@ const FsTreeItem = ({
   const labelIcon = useMemo(
     () => layer === 0 ? faDesktop : layer === 1 ? faHdd : type === 'file' ? faFile : faFolder,
     [layer, type]
+  );
+
+  const handleOpenFile = useCallback(
+    event => {
+      event.stopPropagation();
+      onOpenFile(id);
+    },
+    [id, onOpenFile]
+  );
+
+  const handleOpenNewFile = useCallback(
+    event => {
+      event.stopPropagation();
+      onOpenNewFile(id);
+    },
+    [id, onOpenNewFile]
   );
 
   return (
@@ -42,9 +60,19 @@ const FsTreeItem = ({
           </Typography>
           {type === 'directory' && allow.includes('W') && layer > 1 && (
             <Box display="flex">
-              <Tooltip title="Add a file or folder">
+              <Tooltip title="Add a file">
                 <Box>
-                  <FontAwesomeIcon icon={faPlus} className={classes.labelIcon} size="sm" />
+                  <FontAwesomeIcon
+                    icon={faFileSignature}
+                    className={classes.labelIcon}
+                    size="sm"
+                    onClick={handleOpenNewFile}
+                  />
+                </Box>
+              </Tooltip>
+              <Tooltip title="Add a folder">
+                <Box>
+                  <FontAwesomeIcon icon={faFolderPlus} className={classes.labelIcon} size="sm" />
                 </Box>
               </Tooltip>
               <Tooltip title="Edit folder">
@@ -62,7 +90,11 @@ const FsTreeItem = ({
           {type === 'file' && (
             <Tooltip title="Open a file">
               <Box>
-                <FontAwesomeIcon icon={faGlasses} className={classes.labelIcon} size="sm" onClick={() => onOpenFile(id)} />
+                <FontAwesomeIcon
+                  icon={faGlasses}
+                  className={classes.labelIcon} size="sm"
+                  onClick={handleOpenFile}
+                />
               </Box>
             </Tooltip>
           )}

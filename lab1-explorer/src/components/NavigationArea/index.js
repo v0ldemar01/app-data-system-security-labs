@@ -12,13 +12,16 @@ import {
 } from '@material-ui/icons';
 
 import { useStyles } from './classes';
+import { createErrorDialog } from 'helpers/dialog.helper';
 
 const NavigationArea = ({
   structure,
-  loading
+  loading,
+  editorOpened,
+  onOpenNewFile
 }) => {
   const dispatch = useDispatch();
-  console.log('fsStructure', structure);
+
   const { permissions } = useSelector(state => ({
     permissions: state.user.activeCredentials.permissions
   }));
@@ -27,13 +30,30 @@ const NavigationArea = ({
   const commonClasses = useCommonStyles();
 
   const loadFsStructure = useCallback(
-    () => dispatch(fsActionCreator.loadStructure(permissions)),
-    [permissions, dispatch]
+    () => dispatch(fsActionCreator.loadStructure()),
+    [dispatch]
   );
 
   const handleOpenFile = useCallback(
-    id => dispatch(fsActionCreator.toggleExpandedFile(id)),
-    [dispatch]
+    id => { 
+      if (editorOpened) {
+        createErrorDialog('Failed open file', 'Please save or cancel opened file in editor')
+      } else {
+        dispatch(fsActionCreator.toggleExpandedFile(id))
+      }
+    },
+    [editorOpened, dispatch]
+  );
+
+  const handleOpenNewFile = useCallback(
+    parentFolderId => { 
+      if (editorOpened) {
+        createErrorDialog('Failed create file', 'Please save or cancel opened file in editor')
+      } else {
+        onOpenNewFile({ parentFolderId });
+      }
+    },
+    [editorOpened, dispatch]
   );
 
   useEffect(() => {
@@ -42,7 +62,13 @@ const NavigationArea = ({
 
   const renderTree = useCallback(
     (node, layer = 0) => (
-      <FsTreeItem key={node.id} layer={layer} {...node} onOpenFile={handleOpenFile}>
+      <FsTreeItem
+        key={node.id}
+        layer={layer}
+        {...node}
+        onOpenFile={handleOpenFile}
+        onOpenNewFile={handleOpenNewFile}
+      >
         {Array.isArray(node.children) ? node.children
           .map(childNode => renderTree(childNode, layer + 1)) : null}
       </FsTreeItem>
