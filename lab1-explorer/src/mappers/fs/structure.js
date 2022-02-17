@@ -1,4 +1,5 @@
 import { v4 } from 'uuid';
+
 const fs = window.require('fs').promises;
 const path = window.require('path');
 
@@ -61,19 +62,6 @@ const checkNodePermissionsForAdding = (nodeRules, type) =>
     (type === 'file' && nodeRules.allow.includes('R'))
     || (type === 'directory'
     && nodeRules.allow.includes('R') && nodeRules.allow.includes('X')));
-    
-// const createFsNode = (name, type, checkPermissions, parentCheckPermissions) => {
-//   const allow = (checkPermissions
-//     && checkPermissions?.allow
-//     && !checkPermissions?.allow?.includes('W'))
-//     || (parentCheckPermissions && !parentCheckPermissions.allow?.includes('W')) ? [] : ['W']
-//   return {
-//     id: v4(),
-//     name,
-//     type,
-//     allow
-//   };
-// };
 
 const createFsNode = (name, type, allow) => {
   return {
@@ -84,48 +72,15 @@ const createFsNode = (name, type, allow) => {
   };
 };
 
-export const createFileByParent = (faStructure, permissions, { parentFolderId, fileName, content }) => {
-  const component = getFsComponentById(parentFolderId, faStructure);
-  console.log('component', component);
-  const type = getTypeComponent(component);
-  const node = createFsNode(fileName, type)
+export const createFileToStructure = (faStructure, { parentFolderId, fileName }) => {
+  const newFsStructure = JSON.parse(JSON.stringify(faStructure));
+  const component = getFsComponentById(parentFolderId, newFsStructure);
+  const type = getTypeComponent(fileName);
+  const node = createFsNode(fileName, type, component.allow);
+  component.children = Array.isArray(component.children) ? component.children : [];
+  component.children.push(node);
+  return newFsStructure;
 };
-
-// const nestIterateFs = (currentLayerStructure, layerCount, components, permissions) => {
-//   let newLayerCount = layerCount;
-//   const componentByLayer = components[layerCount];
-//   const typeComponentByLayer = getTypeComponent(componentByLayer);
-//   const nodeByComponent = currentLayerStructure.find(({ name }) => name === componentByLayer);
-
-//   const checkPermissionsToOne = permissions.length - 1 === layerCount
-//     ? permissions.find(({ path }) => componentByLayer === path[layerCount])
-//     : null;
-//   const conditionsToAdd = checkPermissionsToOne ?
-//     checkPermissionsToOne.allow
-//     && (
-//       (typeComponentByLayer === 'file' && checkPermissionsToOne.allow.includes('R'))
-//       || (typeComponentByLayer === 'directory'
-//         && checkPermissionsToOne.allow.includes('R') && checkPermissionsToOne.allow.includes('X'))
-//     ) : true;
-
-//   const parentCheckPermissions = permissions
-//     .find(({ path: currentPath }) => path.join(...components).includes(path.join(...currentPath)))
-
-//   if (!nodeByComponent && (!checkPermissionsToOne || conditionsToAdd)) {
-//     const nodeChild = createFsNode(componentByLayer, typeComponentByLayer, checkPermissionsToOne, parentCheckPermissions);
-//     currentLayerStructure.push(nodeChild);
-//   } else if (nodeByComponent && (!checkPermissionsToOne || conditionsToAdd)) {
-//     newLayerCount += 1;
-//     if (nodeByComponent.type === 'directory') {
-//       nodeByComponent.children = Array.isArray(nodeByComponent.children) ? nodeByComponent.children : [];
-//     }
-//   }
-//   if (layerCount === components.length - 1 || !conditionsToAdd) return currentLayerStructure;
-//   return nestIterateFs(nodeByComponent
-//     ? nodeByComponent.children
-//     : currentLayerStructure, newLayerCount, components, permissions
-//   );
-// }
 
 const iterateFileSystem = (currentLayerStructure, layerCount, components, permissions) => {
   let newLayerCount = layerCount;
@@ -172,26 +127,20 @@ const iterateFileSystem = (currentLayerStructure, layerCount, components, permis
 };
 
 export const createFsStructure = async (permissions = []) => {
-  try {
-    const structure = [];
-    const rootFolder = 'fileSystem';
-    const dir = path.join(process.cwd(), rootFolder);
-    const fsComponents = [];
-    for await (const fsComponent of walkAsync(dir)) {
-      fsComponents.push(path.relative(process.cwd(), fsComponent));
-    }
-    const permissionsWithRelativePath = permissions.map(permission => ({
-      ...permission,
-      path: path.join(rootFolder, ...permission.path.split('://')).split(path.sep)
-    }));
-    for (const fsComponent of fsComponents) {
-      const fsSplitComponent = fsComponent.split(path.sep);
-      console.log('fsSplitComponent', fsSplitComponent);
-      iterateFileSystem(structure, 0, fsSplitComponent, permissionsWithRelativePath);
-    }
-    console.log('structure', structure);
-    return structure;
-  } catch (err) {
-    console.log('err', err);
-  }  
+  const structure = [];
+  const rootFolder = 'fileSystem';
+  const dir = path.join(process.cwd(), rootFolder);
+  const fsComponents = [];
+  for await (const fsComponent of walkAsync(dir)) {
+    fsComponents.push(path.relative(process.cwd(), fsComponent));
+  }
+  const permissionsWithRelativePath = permissions.map(permission => ({
+    ...permission,
+    path: path.join(rootFolder, ...permission.path.split('://')).split(path.sep)
+  }));
+  for (const fsComponent of fsComponents) {
+    const fsSplitComponent = fsComponent.split(path.sep);
+    iterateFileSystem(structure, 0, fsSplitComponent, permissionsWithRelativePath);
+  }
+  return structure;
 };

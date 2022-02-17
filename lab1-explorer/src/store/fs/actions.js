@@ -1,7 +1,16 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { decrypt, encrypt } from 'helpers/crypto.helper';
 import { createErrorDialog, createSuccessDialog } from 'helpers/dialog.helper';
-import { createFileByParent, createFsStructure, getFilePathById, getFsComponentById, readFile, writeFile } from 'helpers/fs.helper';
+import {
+  createFileToStructure,
+  createFsStructure,
+  getFilePathById,
+  getFsComponentById
+} from 'mappers/fs/structure';
+import {
+  createFileToFs,
+  readDecryptFile,
+  updateFileToFs
+} from 'mappers/fs/operations';
 import { ActionType } from './common';
 
 export const loadStructure = createAsyncThunk(
@@ -25,14 +34,11 @@ export const createFile = createAsyncThunk(
     const {
       fs: {
         structure
-      },
-      user: {
-        activeCredentials: {
-          permissions
-        }
       }
     } = getState();
-    await createFileByParent(structure, permissions, data);
+    const newStructure = createFileToStructure(structure, data);
+    await createFileToFs(structure, data);
+    return { structure: newStructure };   
   }
 );
 
@@ -55,11 +61,10 @@ export const toggleExpandedFile = createAsyncThunk(
       const filePath = getFilePathById(fileId, structure);
       const { allow } = getFsComponentById(fileId, structure);
       if (filePath) {
-        const fileContent = await readFile(filePath);
-        const decryptedContent = await decrypt(fileContent);
+        const fileDecryptedContent = await readDecryptFile(filePath);
         resultFile = {
           id: fileId,
-          content: decryptedContent,
+          content: fileDecryptedContent,
           allow
         };
       }
@@ -81,9 +86,7 @@ export const changeFileContent = createAsyncThunk(
       createErrorDialog('Failed update a file', 'No permission for doing it')
       return rejectWithValue();
     }
-    const filePath = getFilePathById(expandedFile.id, structure);
-    const encryptedContent = await encrypt(newFile.content);
-    writeFile(filePath, encryptedContent, true);
+    updateFileToFs(structure, { fileId: expandedFile.id, content: newFile.content });
     createSuccessDialog('Update file is successful', '')
     return {};
   }

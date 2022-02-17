@@ -59,7 +59,7 @@ const FsTreeItem = ({
             {name}
           </Typography>
           {type === 'directory' && allow.includes('W') && layer > 1 && (
-            <Box display="flex">
+            <Box display="flex" ml={1}>
               <Tooltip title="Add a file">
                 <Box>
                   <FontAwesomeIcon

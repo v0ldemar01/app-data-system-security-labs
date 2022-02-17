@@ -16,6 +16,10 @@ export const reducer = createReducer(initialState, builder => {
     state.structure = structure;
     state.loading = false;
   });
+  builder.addCase(fsActions.createFile.fulfilled, (state, action) => {
+    const { structure } = action.payload;
+    state.structure = structure;
+  });
   builder.addCase(fsActions.toggleExpandedFile.fulfilled, (state, action) => {
     const { expandedFile } = action.payload;
     state.expandedFile = expandedFile;
