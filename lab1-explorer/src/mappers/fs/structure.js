@@ -72,11 +72,11 @@ const createFsNode = (name, type, allow) => {
   };
 };
 
-export const createFileToStructure = (faStructure, { parentFolderId, fileName }) => {
+export const createFsNodeToStructure = (faStructure, { parentFolderId, nodeName }) => {
   const newFsStructure = JSON.parse(JSON.stringify(faStructure));
   const component = getFsComponentById(parentFolderId, newFsStructure);
-  const type = getTypeComponent(fileName);
-  const node = createFsNode(fileName, type, component.allow);
+  const type = getTypeComponent(nodeName);
+  const node = createFsNode(nodeName, type, component.allow);
   component.children = Array.isArray(component.children) ? component.children : [];
   component.children.push(node);
   return newFsStructure;

@@ -16,10 +16,20 @@ export const writeFile = (path, content, isRewrite = false) => fs.writeFile(
   path, content, { encoding: 'utf8', ...(isRewrite ? { flag: 'w' } : {}) }
 );
 
+export const createFolder = async path => { 
+  try {
+    await fs.stat(path)
+  } catch (err) {
+    if (err.code === 'ENOENT') {
+      await fs.mkdir(path);
+    }
+  }
+};
+
 export const createFileToFs = async (structure, { parentFolderId, fileName, content }) => {
-  const filePath = getFilePathById(parentFolderId, structure);
+  const folderPath = getFilePathById(parentFolderId, structure);
   const encryptedContent = await encrypt(content);
-  writeFile(path.resolve(filePath, fileName), encryptedContent);
+  writeFile(path.resolve(folderPath, fileName), encryptedContent);
 };
 
 export const updateFileToFs = async (structure, { fileId, content }) => {
@@ -27,3 +37,8 @@ export const updateFileToFs = async (structure, { fileId, content }) => {
   const encryptedContent = await encrypt(content);
   writeFile(filePath, encryptedContent, true);
 };
+
+export const createFolderToFs = async (structure, { parentFolderId, folderName }) => {
+  const folderPath = getFilePathById(parentFolderId, structure);
+  createFolder(path.resolve(folderPath, folderName))
+}

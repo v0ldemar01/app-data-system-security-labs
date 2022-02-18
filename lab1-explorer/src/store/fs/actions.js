@@ -1,13 +1,14 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { createErrorDialog, createSuccessDialog } from 'helpers/dialog.helper';
 import {
-  createFileToStructure,
+  createFsNodeToStructure,
   createFsStructure,
   getFilePathById,
   getFsComponentById
 } from 'mappers/fs/structure';
 import {
   createFileToFs,
+  createFolderToFs,
   readDecryptFile,
   updateFileToFs
 } from 'mappers/fs/operations';
@@ -36,7 +37,10 @@ export const createFile = createAsyncThunk(
         structure
       }
     } = getState();
-    const newStructure = createFileToStructure(structure, data);
+    const newStructure = createFsNodeToStructure(structure, { 
+      parentFolderId: data.parentFolderId,
+      nodeName: data.fileName
+    });
     await createFileToFs(structure, data);
     return { structure: newStructure };   
   }
@@ -44,7 +48,19 @@ export const createFile = createAsyncThunk(
 
 export const createFolder = createAsyncThunk(
   ActionType.CREATE_DIRECTORY,
-  config => config
+  async (data, { getState }) => {
+    const {
+      fs: {
+        structure
+      }
+    } = getState();
+    const newStructure = createFsNodeToStructure(structure, { 
+      parentFolderId: data.parentFolderId,
+      nodeName: data.folderName
+    });
+    await createFolderToFs(structure, data);
+    return { structure: newStructure };
+  }
 );
 
 export const toggleExpandedFile = createAsyncThunk(
@@ -91,3 +107,8 @@ export const changeFileContent = createAsyncThunk(
     return {};
   }
 );
+
+export const renameFolder = createAsyncThunk(
+  ActionType.RENAME_DIRECTORY,
+  data => data
+)

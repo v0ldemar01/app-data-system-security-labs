@@ -19,11 +19,16 @@ import { useStyles } from './classes';
 const FsTreeItem = ({
   id,
   name,
+  isExpandedItem,
   layer,
   type,
   allow,
+  toggleExpandedItem,
   onOpenFile,
   onOpenNewFile,
+  onOpenFileForm,
+  onOpenFolderForm,
+  onRenameFolder,
   ...other
 }) => {
   const classes = useStyles();
@@ -49,12 +54,31 @@ const FsTreeItem = ({
     [id, onOpenNewFile]
   );
 
+  const handleOpenFolderForm = useCallback(
+    type => event => {
+      event.stopPropagation();
+      if (!isExpandedItem) {
+        toggleExpandedItem(id);
+      }      
+      onOpenFolderForm({
+        type,
+        folderId: id
+      })
+    },
+    [
+      id, 
+      isExpandedItem, 
+      onOpenFolderForm, 
+      toggleExpandedItem
+    ]
+  );
+
   return (
     <TreeItem
       nodeId={id}
       label={
         <Box className={classes.labelRoot}>
-          <FontAwesomeIcon icon={labelIcon} className={classes.labelIcon} />
+          <FontAwesomeIcon icon={labelIcon} className={classes.labelIcon} />         
           <Typography variant="body2" className={classes.labelText}>
             {name}
           </Typography>
@@ -72,12 +96,22 @@ const FsTreeItem = ({
               </Tooltip>
               <Tooltip title="Add a folder">
                 <Box>
-                  <FontAwesomeIcon icon={faFolderPlus} className={classes.labelIcon} size="sm" />
+                  <FontAwesomeIcon 
+                    icon={faFolderPlus} 
+                    className={classes.labelIcon} 
+                    size="sm" 
+                    onClick={handleOpenFolderForm('create')}
+                  />
                 </Box>
               </Tooltip>
               <Tooltip title="Edit folder">
                 <Box>
-                  <FontAwesomeIcon icon={faUserEdit} className={classes.labelIcon} size="sm" />
+                  <FontAwesomeIcon 
+                    icon={faUserEdit} 
+                    className={classes.labelIcon} 
+                    size="sm" 
+                    onClick={handleOpenFolderForm('update')}
+                  />
                 </Box>
               </Tooltip>
               <Tooltip title="Delete folder">
@@ -101,6 +135,7 @@ const FsTreeItem = ({
         </Box>
       }
       {...other}
+      onClick={() => type === 'directory' ? toggleExpandedItem(id) : null}
     />
   );
 };

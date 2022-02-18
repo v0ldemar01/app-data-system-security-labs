@@ -16,15 +16,21 @@ export const reducer = createReducer(initialState, builder => {
     state.structure = structure;
     state.loading = false;
   });
-  builder.addCase(fsActions.createFile.fulfilled, (state, action) => {
-    const { structure } = action.payload;
-    state.structure = structure;
-  });
   builder.addCase(fsActions.toggleExpandedFile.fulfilled, (state, action) => {
     const { expandedFile } = action.payload;
     state.expandedFile = expandedFile;
   });
-  builder.addMatcher(isAnyOf(fsActions.changeFileContent.fulfilled, fsActions.changeFileContent.rejected), (state, action) => {
+  builder.addMatcher(isAnyOf(
+    fsActions.createFile.fulfilled,
+    fsActions.createFolder.fulfilled
+  ), (state, action) => {
+    const { structure } = action.payload;
+    state.structure = structure;
+  });
+  builder.addMatcher(isAnyOf(
+    fsActions.changeFileContent.fulfilled,
+    fsActions.changeFileContent.rejected
+  ), (state, action) => {
     state.expandedFile = null;
   });
 });

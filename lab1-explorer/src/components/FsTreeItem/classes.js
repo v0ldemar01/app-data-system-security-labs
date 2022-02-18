@@ -12,5 +12,5 @@ export const useStyles = makeStyles((theme) => createStyles({
   labelText: {
     fontWeight: 'inherit',
     flexGrow: 1,
-  },
+  }
 }));
