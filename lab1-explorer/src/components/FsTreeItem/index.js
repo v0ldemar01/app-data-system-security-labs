@@ -36,6 +36,8 @@ const FsTreeItem = ({
   onOpenFolderForm,
   onRenameFolder,
   onRenameFile,
+  onDeleteFolder,
+  onDeleteFile,
   onCloseNodeForm,
   ...other
 }) => {
@@ -112,6 +114,17 @@ const FsTreeItem = ({
     [type, onRenameFolder, onRenameFile]
   );
 
+  const handleDeleteNode = useCallback(
+    () => {
+      if (type === 'directory') {
+        onDeleteFolder({ folderId: id });
+      } else {
+        onDeleteFile({ fileId: id });
+      }
+    },
+    [id, type, onDeleteFolder, onDeleteFile]
+  );
+
   return (
     <TreeItem
       nodeId={id}
@@ -130,7 +143,7 @@ const FsTreeItem = ({
               {name}
             </Typography>
           )}
-          {!nameEditorActive && allow.includes('W') && layer > 1 && (
+          {!nameEditorActive && allow.includes('W') && (
             <>
               {isExpandedItemActions ? (
                 <>
@@ -166,11 +179,18 @@ const FsTreeItem = ({
                           />
                         </Box>
                       </Tooltip>
-                      <Tooltip title="Delete folder">
-                        <Box>
-                          <FontAwesomeIcon icon={faMinusCircle} className={classes.labelIcon} size="sm" />
-                        </Box>
-                      </Tooltip>
+                      {layer > 1 && (
+                        <Tooltip title="Delete folder">
+                          <Box>
+                            <FontAwesomeIcon
+                              icon={faMinusCircle}
+                              className={classes.labelIcon}
+                              size="sm"
+                              onClick={handleDeleteNode}
+                            />
+                          </Box>
+                        </Tooltip>
+                      )}
                     </Box>
                   )}
                   {type === 'file' && (
@@ -182,6 +202,16 @@ const FsTreeItem = ({
                             className={classes.labelIcon} 
                             size="sm" 
                             onClick={handleOpenFileForm}
+                          />
+                        </Box>
+                      </Tooltip>
+                      <Tooltip title="Delete file">
+                        <Box>
+                          <FontAwesomeIcon
+                            icon={faMinusCircle}
+                            className={classes.labelIcon}
+                            size="sm"
+                            onClick={handleDeleteNode}
                           />
                         </Box>
                       </Tooltip>

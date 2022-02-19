@@ -5,18 +5,17 @@ import { useCommonStyles } from 'components/styles/common';
 import { createErrorDialog } from 'helpers/dialog.helper';
 import clsx from 'clsx';
 import FsTreeItem from 'components/FsTreeItem';
-import NameForm from 'components/NameForm';
-import { Box, Paper, Tooltip } from '@material-ui/core';
+import NameEditor from 'components/NameEditor';
+import { Box, Paper } from '@material-ui/core';
 import { TreeView } from '@material-ui/lab';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFolder, faMinus } from '@fortawesome/free-solid-svg-icons';
+import { faFolder } from '@fortawesome/free-solid-svg-icons';
 import {
   ExpandMore as ExpandMoreIcon,
   ChevronRight as ChevronRightIcon
 } from '@material-ui/icons';
 
 import { useStyles } from './classes';
-import NameEditor from 'components/NameEditor';
 
 const NavigationArea = ({
   structure,
@@ -89,6 +88,20 @@ const NavigationArea = ({
       setFileNameEditor();
     },
     [fileNameEditor, dispatch]
+  );
+
+  const handleDeleteFolder = useCallback(
+    ({ folderId }) => {
+      dispatch(fsActionCreator.deleteFolder({ folderId }));
+    },
+    [dispatch]
+  );
+
+  const handleDeleteFile = useCallback(
+    ({ fileId }) => {
+      dispatch(fsActionCreator.deleteFile({ fileId }));
+    },
+    [dispatch]
   );
 
   const handleCloseNodeForm = useCallback(
@@ -179,6 +192,8 @@ const NavigationArea = ({
           onOpenFileForm={handleOpenFileForm}
           onRenameFolder={handleRenameFolder}
           onRenameFile={handleRenameFile}
+          onDeleteFolder={handleDeleteFolder}
+          onDeleteFile={handleDeleteFile}
           onCloseNodeForm={handleCloseNodeForm}
           toggleExpandedItem={toggleExpandedItem}
           toggleExpandedItemActions={toggleExpandedItemActions}

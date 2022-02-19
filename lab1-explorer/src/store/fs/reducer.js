@@ -24,7 +24,9 @@ export const reducer = createReducer(initialState, builder => {
     fsActions.createFile.fulfilled,
     fsActions.createFolder.fulfilled,
     fsActions.changeFileName.fulfilled,
-    fsActions.changeFolderName.fulfilled
+    fsActions.changeFolderName.fulfilled,
+    fsActions.deleteFile.fulfilled,
+    fsActions.deleteFolder.fulfilled
   ), (state, action) => {
     const { structure } = action.payload;
     state.structure = structure;

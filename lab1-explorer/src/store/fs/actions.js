@@ -5,11 +5,14 @@ import {
   createFsStructure,
   getFilePathById,
   getFsComponentById,
+  removeFsNodeToStructure,
   renameFsNodeToStructure
 } from 'mappers/fs/structure';
 import {
   createFileToFs,
   createFolderToFs,
+  deleteFileToFs,
+  deleteFolderToFs,
   readDecryptFile,
   renameNodeToFs,
   updateFileToFs
@@ -141,5 +144,37 @@ export const changeFileContent = createAsyncThunk(
     updateFileToFs(structure, { fileId: expandedFile.id, content: newFile.content });
     createSuccessDialog('Update file is successful', '')
     return {};
+  }
+);
+
+export const deleteFile = createAsyncThunk(
+  ActionType.DELETE_FILE,
+  async ({ fileId }, { getState }) => {
+    const {
+      fs: {
+        structure
+      }
+    } = getState();
+    const newStructure = removeFsNodeToStructure(structure, { nodeId: fileId });
+    await deleteFileToFs(structure, {
+      fileId
+    });
+    return { structure: newStructure };
+  }
+);
+
+export const deleteFolder = createAsyncThunk(
+  ActionType.DELETE_DIRECTORY,
+  async ({ folderId }, { getState }) => {
+    const {
+      fs: {
+        structure
+      }
+    } = getState();
+    const newStructure = removeFsNodeToStructure(structure, { nodeId: folderId });
+    await deleteFolderToFs(structure, {
+      folderId
+    });
+    return { structure: newStructure };
   }
 );

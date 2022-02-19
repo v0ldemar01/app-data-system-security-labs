@@ -19,7 +19,7 @@ export async function *walkAsync(dir) {
 export const getFsComponentById = (id, currentLayerStructure = []) => {
   let result;
   const nodeByComponent = currentLayerStructure
-      .find(layer => layer.id === id);
+    .find(layer => layer.id === id);
   if (nodeByComponent) {
     return nodeByComponent;
   }
@@ -28,6 +28,24 @@ export const getFsComponentById = (id, currentLayerStructure = []) => {
       .some(nodeItem => (result = getFsComponentById(
         id,
         (nodeItem.children || [])
+      )));
+  }
+  return result;
+};
+
+export const getFsParentComponentById = (id, currentLayerStructure = [], nodeItem = {}) => {
+  let result;
+  const nodeByComponent = currentLayerStructure
+    .find(layer => layer.id === id);
+  if (nodeByComponent) {
+    return nodeItem;
+  }
+  if (currentLayerStructure.length) {
+    currentLayerStructure
+      .some(nodeItem => (result = getFsParentComponentById(
+        id,
+        (nodeItem.children || []),
+        nodeItem
       )));
   }
   return result;
@@ -86,6 +104,13 @@ export const renameFsNodeToStructure = (fsStructure, { nodeId, newName }) => {
   const newFsStructure = JSON.parse(JSON.stringify(fsStructure));
   const component = getFsComponentById(nodeId, newFsStructure);
   component.name = newName;
+  return newFsStructure;
+};
+
+export const removeFsNodeToStructure = (fsStructure, { nodeId }) => {
+  const newFsStructure = JSON.parse(JSON.stringify(fsStructure));
+  const component = getFsParentComponentById(nodeId, newFsStructure);
+  component.children = component.children.filter(({ id }) => id !== nodeId);
   return newFsStructure;
 };
 
