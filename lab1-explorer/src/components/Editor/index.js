@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useState, useEffect } from 'react';
 import { createErrorDialog } from 'helpers/dialog.helper';
-import { useFormStyles } from 'styles/form';
+import PropTypes from 'prop-types';
 import {
   Box,
   Button,
@@ -14,8 +14,9 @@ import {
   Typography
 } from '@material-ui/core';
 
-import { useStyles } from './classes';
 import { useCommonStyles } from 'components/styles/common';
+import { useFormStyles } from 'styles/form';
+import { useStyles } from './classes';
 
 const Editor = ({
   fileOpen,
@@ -178,6 +179,14 @@ const Editor = ({
       </Paper>
     </Box>
   );
+};
+
+Editor.propTypes = {
+  fileOpen: PropTypes.bool.isRequired,
+  expandedFile: PropTypes.oneOfType([PropTypes.object]).isRequired,
+  onChangeFile: PropTypes.func.isRequired,
+  onCreateNewFile: PropTypes.func.isRequired,
+  handleCloseFile: PropTypes.func.isRequired
 };
 
 export default Editor;

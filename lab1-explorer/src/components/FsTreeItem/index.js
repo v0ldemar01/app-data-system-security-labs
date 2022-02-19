@@ -1,4 +1,6 @@
+/* eslint-disable no-nested-ternary */
 import React, { useCallback, useMemo } from 'react';
+import PropTypes from 'prop-types';
 import NameEditor from 'components/NameEditor';
 import { TreeItem } from '@material-ui/lab';
 import { Box, Tooltip, Typography } from '@material-ui/core';
@@ -44,7 +46,7 @@ const FsTreeItem = ({
   const classes = useStyles();
 
   const labelIcon = useMemo(
-    () => layer === 0 ? faDesktop : layer === 1 ? faHdd : type === 'file' ? faFile : faFolder,
+    () => (layer === 0 ? faDesktop : layer === 1 ? faHdd : type === 'file' ? faFile : faFolder),
     [layer, type]
   );
 
@@ -65,20 +67,20 @@ const FsTreeItem = ({
   );
 
   const handleOpenFolderForm = useCallback(
-    type => event => {
+    folderFormType => event => {
       event.stopPropagation();
-      if (!isExpandedItem && type === 'create') {
+      if (!isExpandedItem && folderFormType === 'create') {
         toggleExpandedItem(id);
-      }      
+      }
       onOpenFolderForm({
-        type,
+        type: folderFormType,
         folderId: id
-      })
+      });
     },
     [
-      id, 
-      isExpandedItem, 
-      onOpenFolderForm, 
+      id,
+      isExpandedItem,
+      onOpenFolderForm,
       toggleExpandedItem
     ]
   );
@@ -87,10 +89,10 @@ const FsTreeItem = ({
     () => {
       onOpenFileForm({
         fileId: id
-      })
+      });
     },
     [
-      id, 
+      id,
       onOpenFileForm
     ]
   );
@@ -128,7 +130,7 @@ const FsTreeItem = ({
   return (
     <TreeItem
       nodeId={id}
-      label={
+      label={(
         <Box className={classes.labelRoot}>
           <FontAwesomeIcon icon={labelIcon} className={classes.labelIcon} />
           {nameEditorActive ? (
@@ -144,68 +146,42 @@ const FsTreeItem = ({
             </Typography>
           )}
           {!nameEditorActive && allow.includes('W') && (
-            <>
-              {isExpandedItemActions ? (
-                <>
-                  {type === 'directory' && (
-                    <Box display="flex" ml={1}>
-                      <Tooltip title="Add a file">
-                        <Box>
-                          <FontAwesomeIcon
-                            icon={faFileSignature}
-                            className={classes.labelIcon}
-                            size="sm"
-                            onClick={handleOpenNewFile}
-                          />
-                        </Box>
-                      </Tooltip>
-                      <Tooltip title="Add a folder">
-                        <Box>
-                          <FontAwesomeIcon 
-                            icon={faFolderPlus} 
-                            className={classes.labelIcon} 
-                            size="sm" 
-                            onClick={handleOpenFolderForm('create')}
-                          />
-                        </Box>
-                      </Tooltip>
-                      <Tooltip title="Edit folder">
-                        <Box>
-                          <FontAwesomeIcon 
-                            icon={faUserEdit} 
-                            className={classes.labelIcon} 
-                            size="sm" 
-                            onClick={handleOpenFolderForm('update')}
-                          />
-                        </Box>
-                      </Tooltip>
-                      {layer > 1 && (
-                        <Tooltip title="Delete folder">
-                          <Box>
-                            <FontAwesomeIcon
-                              icon={faMinusCircle}
-                              className={classes.labelIcon}
-                              size="sm"
-                              onClick={handleDeleteNode}
-                            />
-                          </Box>
-                        </Tooltip>
-                      )}
-                    </Box>
-                  )}
-                  {type === 'file' && (
-                    <Box display="flex" ml={1}>
-                      <Tooltip title="Edit file">
-                        <Box>
-                          <FontAwesomeIcon 
-                            icon={faUserEdit} 
-                            className={classes.labelIcon} 
-                            size="sm" 
-                            onClick={handleOpenFileForm}
-                          />
-                        </Box>
-                      </Tooltip>
-                      <Tooltip title="Delete file">
+            isExpandedItemActions ? (
+              <>
+                {type === 'directory' && (
+                  <Box display="flex" ml={1}>
+                    <Tooltip title="Add a file">
+                      <Box>
+                        <FontAwesomeIcon
+                          icon={faFileSignature}
+                          className={classes.labelIcon}
+                          size="sm"
+                          onClick={handleOpenNewFile}
+                        />
+                      </Box>
+                    </Tooltip>
+                    <Tooltip title="Add a folder">
+                      <Box>
+                        <FontAwesomeIcon
+                          icon={faFolderPlus}
+                          className={classes.labelIcon}
+                          size="sm"
+                          onClick={handleOpenFolderForm('create')}
+                        />
+                      </Box>
+                    </Tooltip>
+                    <Tooltip title="Edit folder">
+                      <Box>
+                        <FontAwesomeIcon
+                          icon={faUserEdit}
+                          className={classes.labelIcon}
+                          size="sm"
+                          onClick={handleOpenFolderForm('update')}
+                        />
+                      </Box>
+                    </Tooltip>
+                    {layer > 1 && (
+                      <Tooltip title="Delete folder">
                         <Box>
                           <FontAwesomeIcon
                             icon={faMinusCircle}
@@ -215,47 +191,95 @@ const FsTreeItem = ({
                           />
                         </Box>
                       </Tooltip>
-                      <Tooltip title="Open a file">
-                        <Box>
-                          <FontAwesomeIcon
-                            icon={faGlasses}
-                            className={classes.labelIcon} size="sm"
-                            onClick={handleOpenFile}
-                          />
-                        </Box>
-                      </Tooltip>
-                    </Box>                    
-                  )}
-                  <Tooltip title="Hide actions">
-                    <Box>
-                      <FontAwesomeIcon
-                        icon={faArrowAltCircleRight}
-                        className={classes.labelIcon} size="sm"
-                        onClick={handleToggleExpandedItemActions}
-                      />
-                    </Box>
-                  </Tooltip>
-                </>
-              ) : (
-                <Tooltip title="Expanded actions">
+                    )}
+                  </Box>
+                )}
+                {type === 'file' && (
+                  <Box display="flex" ml={1}>
+                    <Tooltip title="Edit file">
+                      <Box>
+                        <FontAwesomeIcon
+                          icon={faUserEdit}
+                          className={classes.labelIcon}
+                          size="sm"
+                          onClick={handleOpenFileForm}
+                        />
+                      </Box>
+                    </Tooltip>
+                    <Tooltip title="Delete file">
+                      <Box>
+                        <FontAwesomeIcon
+                          icon={faMinusCircle}
+                          className={classes.labelIcon}
+                          size="sm"
+                          onClick={handleDeleteNode}
+                        />
+                      </Box>
+                    </Tooltip>
+                    <Tooltip title="Open a file">
+                      <Box>
+                        <FontAwesomeIcon
+                          icon={faGlasses}
+                          className={classes.labelIcon}
+                          size="sm"
+                          onClick={handleOpenFile}
+                        />
+                      </Box>
+                    </Tooltip>
+                  </Box>
+                )}
+                <Tooltip title="Hide actions">
                   <Box>
                     <FontAwesomeIcon
-                      icon={faScroll}
+                      icon={faArrowAltCircleRight}
                       className={classes.labelIcon}
                       size="sm"
                       onClick={handleToggleExpandedItemActions}
                     />
                   </Box>
                 </Tooltip>
-              )}
-            </>
-          )}                   
+              </>
+            ) : (
+              <Tooltip title="Expanded actions">
+                <Box>
+                  <FontAwesomeIcon
+                    icon={faScroll}
+                    className={classes.labelIcon}
+                    size="sm"
+                    onClick={handleToggleExpandedItemActions}
+                  />
+                </Box>
+              </Tooltip>
+            )
+          )}
         </Box>
-      }
+      )}
       {...other}
-      onClick={() => type === 'directory' ? toggleExpandedItem(id) : null}
+      onClick={() => (type === 'directory' ? toggleExpandedItem(id) : null)}
     />
   );
+};
+
+FsTreeItem.propTypes = {
+  id: PropTypes.string.isRequired,
+  name: PropTypes.string.isRequired,
+  isExpandedItem: PropTypes.bool.isRequired,
+  isExpandedItemActions: PropTypes.bool.isRequired,
+  layer: PropTypes.number.isRequired,
+  type: PropTypes.oneOf(['directory', 'folder']).isRequired,
+  allow: PropTypes.arrayOf(['W', 'R', 'X']).isRequired,
+  nameEditorActive: PropTypes.bool.isRequired,
+  toggleExpandedItem: PropTypes.func.isRequired,
+  toggleExpandedItemActions: PropTypes.func.isRequired,
+  onOpenFile: PropTypes.func.isRequired,
+  onOpenNewFile: PropTypes.func.isRequired,
+  onOpenFileForm: PropTypes.func.isRequired,
+  onOpenFolderForm: PropTypes.func.isRequired,
+  onRenameFolder: PropTypes.func.isRequired,
+  onRenameFile: PropTypes.func.isRequired,
+  onDeleteFolder: PropTypes.func.isRequired,
+  onDeleteFile: PropTypes.func.isRequired,
+  onCloseNodeForm: PropTypes.func.isRequired
 };
 
 export default FsTreeItem;

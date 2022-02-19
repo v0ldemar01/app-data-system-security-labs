@@ -4,6 +4,7 @@ import { fsActionCreator } from 'store/actions';
 import { useCommonStyles } from 'components/styles/common';
 import { createErrorDialog } from 'helpers/dialog.helper';
 import clsx from 'clsx';
+import PropTypes from 'prop-types';
 import FsTreeItem from 'components/FsTreeItem';
 import NameEditor from 'components/NameEditor';
 import { Box, Paper } from '@material-ui/core';
@@ -37,13 +38,17 @@ const NavigationArea = ({
   const classes = useStyles();
   const commonClasses = useCommonStyles();
 
-  
+  const loadFsStructure = useCallback(
+    () => dispatch(fsActionCreator.loadStructure()),
+    [dispatch]
+  );
+
   useEffect(() => {
     loadFsStructure();
   }, [permissions]);
 
   const handleOpenFolderForm = useCallback(
-    data => setFolderNameEditor({ ...data, value: '' }), 
+    data => setFolderNameEditor({ ...data, value: '' }),
     []
   );
 
@@ -53,11 +58,11 @@ const NavigationArea = ({
   );
 
   const handleOpenFileForm = useCallback(
-    data => setFileNameEditor({ ...data, value: '' }), 
+    data => setFileNameEditor({ ...data, value: '' }),
     []
   );
 
-    const handleCreateNewFolder = useCallback(
+  const handleCreateNewFolder = useCallback(
     ({ folderName }) => {
       dispatch(fsActionCreator.createFolder({
         parentFolderId: folderNameEditor.folderId,
@@ -122,7 +127,7 @@ const NavigationArea = ({
         return prev.filter(item => item !== nodeId);
       }
       return [...prev, nodeId];
-    }), 
+    }),
     []
   );
 
@@ -132,7 +137,7 @@ const NavigationArea = ({
         return prev.filter(item => item !== nodeId);
       }
       return [...prev, nodeId];
-    }), 
+    }),
     []
   );
 
@@ -143,26 +148,21 @@ const NavigationArea = ({
     [expandedActions]
   );
 
-  const loadFsStructure = useCallback(
-    () => dispatch(fsActionCreator.loadStructure()),
-    [dispatch]
-  );
-
   const handleOpenFile = useCallback(
-    id => { 
+    id => {
       if (editorOpened) {
-        createErrorDialog('Failed open file', 'Please save or cancel opened file in editor')
+        createErrorDialog('Failed open file', 'Please save or cancel opened file in editor');
       } else {
-        dispatch(fsActionCreator.toggleExpandedFile(id))
+        dispatch(fsActionCreator.toggleExpandedFile(id));
       }
     },
     [editorOpened, dispatch]
   );
 
   const handleOpenNewFile = useCallback(
-    parentFolderId => { 
+    parentFolderId => {
       if (editorOpened) {
-        createErrorDialog('Failed create file', 'Please save or cancel opened file in editor')
+        createErrorDialog('Failed create file', 'Please save or cancel opened file in editor');
       } else {
         onOpenNewFile({ parentFolderId });
       }
@@ -203,34 +203,36 @@ const NavigationArea = ({
               {folderNameEditor && folderNameEditor?.type === 'create'
                 && folderNameEditor?.folderId === node.id
                 && (
-                <Box display="flex" alignItems="center">
-                  <FontAwesomeIcon icon={faFolder} className={classes.editorIcon} />
-                  <NameEditor
-                    name="folderName"
-                    value=""
-                    onSubmitForm={handleCreateNewFolder}
-                    onCloseForm={handleCloseFolderForm}
-                  />
-                </Box>
-              )}
+                  <Box display="flex" alignItems="center">
+                    <FontAwesomeIcon icon={faFolder} className={classes.editorIcon} />
+                    <NameEditor
+                      name="folderName"
+                      value=""
+                      onSubmitForm={handleCreateNewFolder}
+                      onCloseForm={handleCloseFolderForm}
+                    />
+                  </Box>
+                )}
               {renderChildren}
             </>
-          ) : renderChildren}        
+          ) : renderChildren}
         </FsTreeItem>
       );
     },
     [
       fileNameEditor,
       folderNameEditor,
-      handleOpenFile, 
-      handleOpenNewFile, 
-      handleCreateNewFolder, 
+      handleOpenFile,
+      handleOpenNewFile,
+      handleCreateNewFolder,
       handleRenameFolder,
       handleRenameFile,
       handleOpenFolderForm,
       handleCloseFolderForm,
       handleCloseNodeForm,
       handleOpenFileForm,
+      handleDeleteFile,
+      handleDeleteFolder,
       toggleExpandedItem,
       toggleExpandedItemActions,
       checkExpandedItem,
@@ -256,6 +258,13 @@ const NavigationArea = ({
       </Paper>
     </Box>
   );
+};
+
+NavigationArea.propTypes = {
+  structure: PropTypes.arrayOf(PropTypes.object).isRequired,
+  loading: PropTypes.bool.isRequired,
+  editorOpened: PropTypes.bool.isRequired,
+  onOpenNewFile: PropTypes.func.isRequired
 };
 
 export default NavigationArea;

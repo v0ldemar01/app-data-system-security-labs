@@ -42,12 +42,12 @@ export const createFile = createAsyncThunk(
         structure
       }
     } = getState();
-    const newStructure = createFsNodeToStructure(structure, { 
+    const newStructure = createFsNodeToStructure(structure, {
       parentFolderId: data.parentFolderId,
       nodeName: data.fileName
     });
     await createFileToFs(structure, data);
-    return { structure: newStructure };   
+    return { structure: newStructure };
   }
 );
 
@@ -59,7 +59,7 @@ export const createFolder = createAsyncThunk(
         structure
       }
     } = getState();
-    const newStructure = createFsNodeToStructure(structure, { 
+    const newStructure = createFsNodeToStructure(structure, {
       parentFolderId: data.parentFolderId,
       nodeName: data.folderName
     });
@@ -138,11 +138,11 @@ export const changeFileContent = createAsyncThunk(
       }
     } = getState();
     if (!expandedFile.allow.includes('W')) {
-      createErrorDialog('Failed update a file', 'No permission for doing it')
+      createErrorDialog('Failed update a file', 'No permission for doing it');
       return rejectWithValue();
     }
     updateFileToFs(structure, { fileId: expandedFile.id, content: newFile.content });
-    createSuccessDialog('Update file is successful', '')
+    createSuccessDialog('Update file is successful', '');
     return {};
   }
 );

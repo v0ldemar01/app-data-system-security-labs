@@ -1,7 +1,7 @@
 import { createStyles, makeStyles } from '@material-ui/core';
-import AppLogo from '../../../assets/images/windows.png';
+import AppLogo from 'assets/images/windows.png';
 
-export const useStyles = makeStyles(theme => createStyles({
+export const useStyles = makeStyles(() => createStyles({
   logo: {
     background: `url(${AppLogo}) center no-repeat fixed`,
     backgroundSize: 'cover',

@@ -1,9 +1,12 @@
+/* eslint-disable no-return-assign */
+/* eslint-disable no-await-in-loop */
+/* eslint-disable no-restricted-syntax */
 import { v4 } from 'uuid';
 
 const fs = window.require('fs').promises;
 const path = window.require('path');
 
-export async function *walkAsync(dir) {
+export async function* walkAsync(dir) {
   const files = await fs.readdir(dir, { withFileTypes: true });
   for (const file of files) {
     if (file.isDirectory()) {
@@ -13,8 +16,7 @@ export async function *walkAsync(dir) {
     }
   }
   if (!files.length) yield dir;
-};
-
+}
 
 export const getFsComponentById = (id, currentLayerStructure = []) => {
   let result;
@@ -42,10 +44,10 @@ export const getFsParentComponentById = (id, currentLayerStructure = [], nodeIte
   }
   if (currentLayerStructure.length) {
     currentLayerStructure
-      .some(nodeItem => (result = getFsParentComponentById(
+      .some(currentLayerNodeItem => (result = getFsParentComponentById(
         id,
-        (nodeItem.children || []),
-        nodeItem
+        (currentLayerNodeItem.children || []),
+        currentLayerNodeItem
       )));
   }
   return result;
@@ -63,32 +65,30 @@ export const getFilePathById = (id, currentLayerStructure = [], filePath = '') =
       .some(nodeItem => (result = getFilePathById(
         id,
         (nodeItem.children || []),
-        path.resolve(filePath, nodeItem.name))
+        path.resolve(filePath, nodeItem.name)
+      )
       ));
   }
   return result;
 };
 
-const getTypeComponent = componentByLayer => path.parse(componentByLayer).ext
+const getTypeComponent = componentByLayer => (path.parse(componentByLayer).ext
   ? 'file'
-  : 'directory';
+  : 'directory');
 
-const checkNodePermissionsForAdding = (nodeRules, type) => 
-  nodeRules 
+const checkNodePermissionsForAdding = (nodeRules, type) => nodeRules
   && nodeRules.allow
   && (
     (type === 'file' && nodeRules.allow.includes('R'))
     || (type === 'directory'
     && nodeRules.allow.includes('R') && nodeRules.allow.includes('X')));
 
-const createFsNode = (name, type, allow) => {
-  return {
-    id: v4(),
-    name,
-    type,
-    allow: Array.isArray(allow) ? allow : []
-  };
-};
+const createFsNode = (name, type, allow) => ({
+  id: v4(),
+  name,
+  type,
+  allow: Array.isArray(allow) ? allow : []
+});
 
 export const createFsNodeToStructure = (fsStructure, { parentFolderId, nodeName }) => {
   const newFsStructure = JSON.parse(JSON.stringify(fsStructure));
@@ -120,21 +120,21 @@ const iterateFileSystem = (currentLayerStructure, layerCount, components, permis
   const typeComponentByLayer = getTypeComponent(componentByLayer);
   const nodeByComponent = currentLayerStructure
     .find(({ name }) => name === componentByLayer);
-  
+
   const checkDirectPermissions = permissions
-    .find(({ path }) => (path || []).length - 1 === layerCount 
-      && componentByLayer === (path || [])[layerCount]);
+    .find(({ path: currentPath }) => (currentPath || []).length - 1 === layerCount
+      && componentByLayer === (currentPath || [])[layerCount]);
   const conditionToAdd = checkNodePermissionsForAdding(checkDirectPermissions, typeComponentByLayer);
 
   const checkParentPermissions = permissions
     .find(({ path: currentPath }) => path.join(...components.slice(0, newLayerCount + 1))
       .includes(path.join(...currentPath)));
   const parentConditionToAdd = Boolean(checkParentPermissions) && checkNodePermissionsForAdding(
-    checkParentPermissions, 
+    checkParentPermissions,
     getTypeComponent(checkParentPermissions.path.slice(-1)[0])
   );
-  if ((!checkDirectPermissions && checkParentPermissions) 
-    || (conditionToAdd && parentConditionToAdd) 
+  if ((!checkDirectPermissions && checkParentPermissions)
+    || (conditionToAdd && parentConditionToAdd)
     || (layerCount === 0 && !checkDirectPermissions)) {
     if (!nodeByComponent) {
       const nodeChild = createFsNode(
@@ -152,8 +152,7 @@ const iterateFileSystem = (currentLayerStructure, layerCount, components, permis
     if (layerCount === components.length - 1) return currentLayerStructure;
     return iterateFileSystem(nodeByComponent
       ? nodeByComponent.children
-      : currentLayerStructure, newLayerCount, components, permissions
-    );
+      : currentLayerStructure, newLayerCount, components, permissions);
   }
   return currentLayerStructure;
 };

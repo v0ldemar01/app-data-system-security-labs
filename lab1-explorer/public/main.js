@@ -1,3 +1,4 @@
+/* eslint-disable import/no-extraneous-dependencies */
 
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
@@ -29,8 +30,8 @@ function createWindow() {
   );
   if (isDev) {
     installExtension([REDUX_DEVTOOLS, REACT_DEVELOPER_TOOLS])
-      .then((name) => console.log(`Added Extension:  ${name}`))
-      .catch((err) => console.log('An error occurred: ', err));
+      .then(name => console.log(`Added Extension:  ${name}`))
+      .catch(err => console.log('An error occurred: ', err));
     win.webContents.on('did-frame-finish-load', () => {
       win.webContents.closeDevTools();
       win.webContents.once('devtools-opened', () => win.focus());
@@ -41,12 +42,12 @@ function createWindow() {
 
 app.whenReady().then(() => createWindow());
 
-app.on('window-all-closed', function () {
+app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit();
   }
 });
 
-app.on('activate', function () {
+app.on('activate', () => {
   if (BrowserWindow.getAllWindows().length === 0) createWindow();
 });

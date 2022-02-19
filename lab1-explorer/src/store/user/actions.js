@@ -13,7 +13,7 @@ export const authUser = createAsyncThunk(
     const activeCredentials = userCredentialsConfig
       .find(({ role, password }) => role === credentials.role && password === credentials.password);
     if (!activeCredentials) {
-      createErrorDialog('Failed authorization into system', 'Incorrect password')
+      createErrorDialog('Failed authorization into system', 'Incorrect password');
       return rejectWithValue();
     }
     return { activeCredentials };

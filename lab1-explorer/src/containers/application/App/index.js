@@ -6,10 +6,10 @@ import Authorization from 'containers/application/Authorization';
 import FileExplorer from 'containers/application/FileExplorer';
 import PrivateRoute from 'containers/route/PrivateRoute';
 import PublicRoute from 'containers/route/PublicRoute';
-import { authRoute, homeRoute } from './routes';
 import { MuiThemeProvider } from '@material-ui/core';
 
 import { theme } from 'styles/theme';
+import { authRoute, homeRoute } from './routes';
 
 const App = () => (
   <Provider store={store}>

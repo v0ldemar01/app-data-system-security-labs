@@ -5,10 +5,10 @@ const initialState = {
   structure: [],
   loading: false,
   expandedFile: null
-}
+};
 
 export const reducer = createReducer(initialState, builder => {
-  builder.addCase(fsActions.loadStructure.pending, (state, action) => {
+  builder.addCase(fsActions.loadStructure.pending, state => {
     state.loading = true;
   });
   builder.addCase(fsActions.loadStructure.fulfilled, (state, action) => {
@@ -34,7 +34,7 @@ export const reducer = createReducer(initialState, builder => {
   builder.addMatcher(isAnyOf(
     fsActions.changeFileContent.fulfilled,
     fsActions.changeFileContent.rejected
-  ), (state, action) => {
+  ), state => {
     state.expandedFile = null;
   });
 });

@@ -31,7 +31,7 @@ const FileExplorer = () => {
   );
 
   const handleCloseFile = useCallback(
-    () => { 
+    () => {
       if (expandedFile) {
         dispatch(fsActionCreator.toggleExpandedFile(expandedFile?.id));
       } else {

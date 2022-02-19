@@ -4,8 +4,7 @@ const secret = 'blablabla';
 const algorithm = 'aes-256-ctr';
 const ivLength = 16;
 
-const getCipherKey = password =>
-  crypto.createHash('sha256').update(password).digest();
+const getCipherKey = password => crypto.createHash('sha256').update(password).digest();
 
 export const encrypt = async data => {
   try {
@@ -19,7 +18,7 @@ export const encrypt = async data => {
     console.log('Encrypt error', err);
     throw err;
   }
-}
+};
 
 export const decrypt = async content => {
   try {
@@ -28,11 +27,11 @@ export const decrypt = async content => {
     const decipher = crypto.createDecipheriv(algorithm, CIPHER_KEY, Buffer.from(iv, 'hex'));
     const decrpyted = Buffer.concat([
       decipher.update(Buffer.from(data, 'hex')),
-      decipher.final(),
+      decipher.final()
     ]);
     return decrpyted.toString();
   } catch (err) {
     console.log('Decrypt error', err);
     throw err;
   }
-}
+};

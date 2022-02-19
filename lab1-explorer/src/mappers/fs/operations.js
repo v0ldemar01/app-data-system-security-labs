@@ -4,33 +4,35 @@ import { getFilePathById } from './structure';
 const fs = window.require('fs').promises;
 const path = window.require('path');
 
-export const readFile = path => fs.readFile(path, 'utf-8');
+export const readFile = filePath => fs.readFile(filePath, 'utf-8');
 
-export const readDecryptFile = async path => {
-  const fileContent = await readFile(path);
+export const readDecryptFile = async filePath => {
+  const fileContent = await readFile(filePath);
   const decryptedContent = await decrypt(fileContent);
   return decryptedContent;
 };
 
-export const writeFile = (path, content, isRewrite = false) => fs.writeFile(
-  path, content, { encoding: 'utf8', ...(isRewrite ? { flag: 'w' } : {}) }
+export const writeFile = (filePath, content, isRewrite = false) => fs.writeFile(
+  filePath,
+  content,
+  { encoding: 'utf8', ...(isRewrite ? { flag: 'w' } : {}) }
 );
 
-export const createFolder = async path => { 
+export const createFolder = async folderPath => {
   try {
-    await fs.stat(path)
+    await fs.stat(folderPath);
   } catch (err) {
     if (err.code === 'ENOENT') {
-      await fs.mkdir(path);
+      await fs.mkdir(folderPath);
     }
   }
 };
 
-export const renameFileOrFolder = (path, newPah) => fs.rename(path, newPah);
+export const renameFileOrFolder = (folderPath, newPah) => fs.rename(folderPath, newPah);
 
-export const deleteFile = path => fs.unlink(path);
+export const deleteFile = folderPath => fs.unlink(folderPath);
 
-export const deleteFolder = path => fs.rm(path, { recursive: true });
+export const deleteFolder = folderPath => fs.rm(folderPath, { recursive: true });
 
 export const createFileToFs = async (structure, { parentFolderId, fileName, content }) => {
   const folderPath = getFilePathById(parentFolderId, structure);
@@ -46,7 +48,8 @@ export const updateFileToFs = async (structure, { fileId, content }) => {
 
 export const createFolderToFs = async (structure, { parentFolderId, folderName }) => {
   const folderPath = getFilePathById(parentFolderId, structure);
-  await createFolder(path.resolve(folderPath, folderName))
+
+  await createFolder(path.resolve(folderPath, folderName));
 };
 
 export const renameNodeToFs = async (structure, { nodeId, newName }) => {

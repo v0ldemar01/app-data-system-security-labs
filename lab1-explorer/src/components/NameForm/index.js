@@ -1,5 +1,5 @@
 import React from 'react';
-import clsx from 'clsx';
+import PropTypes from 'prop-types';
 import { Field, Form, Formik } from 'formik';
 import { Box, IconButton, TextField } from '@material-ui/core';
 import { Clear as ClearIcon, Check as CheckIcon } from '@material-ui/icons';
@@ -65,11 +65,17 @@ const NameForm = ({
                 )
               )
             }}
-          />            
+          />
         </Form>
       )}
     </Formik>
   );
+};
+
+NameForm.propTypes = {
+  value: PropTypes.string.isRequired,
+  name: PropTypes.string.isRequired,
+  onSubmitForm: PropTypes.func.isRequired
 };
 
 export default NameForm;

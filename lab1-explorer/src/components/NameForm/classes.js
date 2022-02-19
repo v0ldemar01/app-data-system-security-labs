@@ -11,13 +11,13 @@ export const useStyles = makeStyles(theme => createStyles({
     },
     '& .MuiInputBase-input': {
       fontSize: theme.spacing(2)
-    },
+    }
   },
   iconContainer: {
     padding: '0 !important'
   },
   icon: {
-    fontSize: `${theme.spacing(2.75)}px !important`    
+    fontSize: `${theme.spacing(2.75)}px !important`
   },
   clearIcon: {
     color: `${theme.palette.error.main} !important`
