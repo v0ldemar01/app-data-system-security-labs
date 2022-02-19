@@ -72,13 +72,20 @@ const createFsNode = (name, type, allow) => {
   };
 };
 
-export const createFsNodeToStructure = (faStructure, { parentFolderId, nodeName }) => {
-  const newFsStructure = JSON.parse(JSON.stringify(faStructure));
+export const createFsNodeToStructure = (fsStructure, { parentFolderId, nodeName }) => {
+  const newFsStructure = JSON.parse(JSON.stringify(fsStructure));
   const component = getFsComponentById(parentFolderId, newFsStructure);
   const type = getTypeComponent(nodeName);
   const node = createFsNode(nodeName, type, component.allow);
   component.children = Array.isArray(component.children) ? component.children : [];
   component.children.push(node);
+  return newFsStructure;
+};
+
+export const renameFsNodeToStructure = (fsStructure, { nodeId, newName }) => {
+  const newFsStructure = JSON.parse(JSON.stringify(fsStructure));
+  const component = getFsComponentById(nodeId, newFsStructure);
+  component.name = newName;
   return newFsStructure;
 };
 

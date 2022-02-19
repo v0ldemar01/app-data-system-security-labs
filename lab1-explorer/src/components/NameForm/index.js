@@ -47,13 +47,17 @@ const NameForm = ({
                   <Box display="flex" mr={-1} ml={0.5}>
                     <IconButton
                       className={classes.iconContainer}
-                      onClick={() => setFieldValue(name, '')}
+                      onClick={event => {
+                        event.stopPropagation();
+                        setFieldValue(name, '');
+                      }}
                     >
                       <ClearIcon className={classes.icon} />
                     </IconButton>
                     <IconButton
                       type="submit"
                       className={classes.iconContainer}
+                      onClick={event => event.stopPropagation()}
                     >
                       <CheckIcon className={classes.icon} />
                     </IconButton>

@@ -26,6 +26,8 @@ export const createFolder = async path => {
   }
 };
 
+export const renameFileOrFolder = (path, newPah) => fs.rename(path, newPah);
+
 export const createFileToFs = async (structure, { parentFolderId, fileName, content }) => {
   const folderPath = getFilePathById(parentFolderId, structure);
   const encryptedContent = await encrypt(content);
@@ -41,4 +43,9 @@ export const updateFileToFs = async (structure, { fileId, content }) => {
 export const createFolderToFs = async (structure, { parentFolderId, folderName }) => {
   const folderPath = getFilePathById(parentFolderId, structure);
   createFolder(path.resolve(folderPath, folderName))
-}
+};
+
+export const renameNodeToFs = async (structure, { nodeId, newName }) => {
+  const fullPath = getFilePathById(nodeId, structure);
+  await renameFileOrFolder(fullPath, path.resolve(fullPath, '../', newName));
+};

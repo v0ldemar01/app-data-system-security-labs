@@ -22,7 +22,9 @@ export const reducer = createReducer(initialState, builder => {
   });
   builder.addMatcher(isAnyOf(
     fsActions.createFile.fulfilled,
-    fsActions.createFolder.fulfilled
+    fsActions.createFolder.fulfilled,
+    fsActions.changeFileName.fulfilled,
+    fsActions.changeFolderName.fulfilled
   ), (state, action) => {
     const { structure } = action.payload;
     state.structure = structure;

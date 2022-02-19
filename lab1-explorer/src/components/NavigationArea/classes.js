@@ -10,10 +10,7 @@ export const useStyles = makeStyles(theme => createStyles({
   editorIcon: {
     marginRight: theme.spacing(1)
   },
-  clearIcon: {
-    margin: `0 ${theme.spacing(1)}px`,
-    cursor: 'pointer'
-  },
+
   iconContainer: {
     padding: '0 !important'
   }

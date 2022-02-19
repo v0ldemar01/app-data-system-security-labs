@@ -16,20 +16,18 @@ import {
 } from '@material-ui/icons';
 
 import { useStyles } from './classes';
+import NameEditor from 'components/NameEditor';
 
 const NavigationArea = ({
   structure,
   loading,
   editorOpened,
-  folderNameEditor,
-  onOpenNewFile,
-  onOpenFolderForm,
-  onCloseFolderForm,
-  onOpenFileForm,
-  onCreateNewFolder,
-  onRenameFolder
+  onOpenNewFile
 }) => {
+  const [folderNameEditor, setFolderNameEditor] = useState();
+  const [fileNameEditor, setFileNameEditor] = useState();
   const [expanded, setExpanded] = useState([]);
+  const [expandedActions, setExpandedActions] = useState([]);
 
   const dispatch = useDispatch();
 
@@ -39,6 +37,71 @@ const NavigationArea = ({
 
   const classes = useStyles();
   const commonClasses = useCommonStyles();
+
+  
+  useEffect(() => {
+    loadFsStructure();
+  }, [permissions]);
+
+  const handleOpenFolderForm = useCallback(
+    data => setFolderNameEditor({ ...data, value: '' }), 
+    []
+  );
+
+  const handleCloseFolderForm = useCallback(
+    () => setFolderNameEditor(),
+    []
+  );
+
+  const handleOpenFileForm = useCallback(
+    data => setFileNameEditor({ ...data, value: '' }), 
+    []
+  );
+
+    const handleCreateNewFolder = useCallback(
+    ({ folderName }) => {
+      dispatch(fsActionCreator.createFolder({
+        parentFolderId: folderNameEditor.folderId,
+        folderName
+      }));
+      setFolderNameEditor();
+    },
+    [folderNameEditor, dispatch]
+  );
+
+  const handleRenameFolder = useCallback(
+    ({ newFolderName }) => {
+      dispatch(fsActionCreator.changeFolderName({
+        folderId: folderNameEditor.folderId,
+        newFolderName
+      }));
+      setFolderNameEditor();
+    },
+    [folderNameEditor, dispatch]
+  );
+
+  const handleRenameFile = useCallback(
+    ({ newFileName }) => {
+      dispatch(fsActionCreator.changeFileName({
+        fileId: fileNameEditor.fileId,
+        newFileName
+      }));
+      setFileNameEditor();
+    },
+    [fileNameEditor, dispatch]
+  );
+
+  const handleCloseNodeForm = useCallback(
+    () => {
+      if (fileNameEditor) {
+        setFileNameEditor();
+      }
+      if (folderNameEditor) {
+        setFolderNameEditor();
+      }
+    },
+    [fileNameEditor, folderNameEditor]
+  );
 
   const toggleExpandedItem = useCallback(
     nodeId => setExpanded(prev => {
@@ -50,7 +113,22 @@ const NavigationArea = ({
     []
   );
 
+  const toggleExpandedItemActions = useCallback(
+    nodeId => setExpandedActions(prev => {
+      if (prev.includes(nodeId)) {
+        return prev.filter(item => item !== nodeId);
+      }
+      return [...prev, nodeId];
+    }), 
+    []
+  );
+
   const checkExpandedItem = useCallback(nodeId => expanded.includes(nodeId), [expanded]);
+
+  const checkExpandedItemActions = useCallback(
+    nodeId => expandedActions.includes(nodeId),
+    [expandedActions]
+  );
 
   const loadFsStructure = useCallback(
     () => dispatch(fsActionCreator.loadStructure()),
@@ -79,10 +157,6 @@ const NavigationArea = ({
     [editorOpened, onOpenNewFile]
   );
 
-  useEffect(() => {
-    loadFsStructure();
-  }, [permissions]);
-
   const renderTree = useCallback(
     (node, layer = 0) => {
       const renderChildren = Array.isArray(node.children) ? node.children
@@ -92,13 +166,22 @@ const NavigationArea = ({
           key={node.id}
           layer={layer}
           {...node}
+          nameEditorActive={
+            (folderNameEditor?.type === 'update'
+              && folderNameEditor?.folderId === node.id)
+            || fileNameEditor?.fileId === node.id
+          }
           isExpandedItem={checkExpandedItem(node.id)}
+          isExpandedItemActions={checkExpandedItemActions(node.id)}
           onOpenFile={handleOpenFile}
           onOpenNewFile={handleOpenNewFile}
-          onOpenFolderForm={onOpenFolderForm}
-          onOpenFileForm={onOpenFileForm}
-          onRenameFolder={onRenameFolder}
+          onOpenFolderForm={handleOpenFolderForm}
+          onOpenFileForm={handleOpenFileForm}
+          onRenameFolder={handleRenameFolder}
+          onRenameFile={handleRenameFile}
+          onCloseNodeForm={handleCloseNodeForm}
           toggleExpandedItem={toggleExpandedItem}
+          toggleExpandedItemActions={toggleExpandedItemActions}
         >
           {node.type === 'directory' ? (
             <>
@@ -107,21 +190,12 @@ const NavigationArea = ({
                 && (
                 <Box display="flex" alignItems="center">
                   <FontAwesomeIcon icon={faFolder} className={classes.editorIcon} />
-                  <NameForm
+                  <NameEditor
                     name="folderName"
                     value=""
-                    onSubmitForm={onCreateNewFolder}
+                    onSubmitForm={handleCreateNewFolder}
+                    onCloseForm={handleCloseFolderForm}
                   />
-                  <Tooltip title="Close form">
-                    <Box>
-                      <FontAwesomeIcon
-                        icon={faMinus}
-                        size="sm"
-                        className={classes.clearIcon}
-                        onClick={onCloseFolderForm}
-                      /> 
-                    </Box>
-                  </Tooltip>                              
                 </Box>
               )}
               {renderChildren}
@@ -131,15 +205,21 @@ const NavigationArea = ({
       );
     },
     [
+      fileNameEditor,
       folderNameEditor,
       handleOpenFile, 
       handleOpenNewFile, 
-      onCreateNewFolder, 
-      onRenameFolder,
-      onOpenFolderForm,
-      onOpenFileForm,
+      handleCreateNewFolder, 
+      handleRenameFolder,
+      handleRenameFile,
+      handleOpenFolderForm,
+      handleCloseFolderForm,
+      handleCloseNodeForm,
+      handleOpenFileForm,
       toggleExpandedItem,
-      checkExpandedItem
+      toggleExpandedItemActions,
+      checkExpandedItem,
+      checkExpandedItemActions
     ]
   );
 

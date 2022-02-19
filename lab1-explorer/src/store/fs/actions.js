@@ -4,12 +4,14 @@ import {
   createFsNodeToStructure,
   createFsStructure,
   getFilePathById,
-  getFsComponentById
+  getFsComponentById,
+  renameFsNodeToStructure
 } from 'mappers/fs/structure';
 import {
   createFileToFs,
   createFolderToFs,
   readDecryptFile,
+  renameNodeToFs,
   updateFileToFs
 } from 'mappers/fs/operations';
 import { ActionType } from './common';
@@ -89,6 +91,40 @@ export const toggleExpandedFile = createAsyncThunk(
   }
 );
 
+export const changeFileName = createAsyncThunk(
+  ActionType.CHANGE_FILE_NAME,
+  async ({ fileId, newFileName }, { getState }) => {
+    const {
+      fs: {
+        structure
+      }
+    } = getState();
+    const newStructure = renameFsNodeToStructure(structure, { nodeId: fileId, newName: newFileName });
+    await renameNodeToFs(structure, {
+      nodeId: fileId,
+      newName: newFileName
+    });
+    return { structure: newStructure };
+  }
+);
+
+export const changeFolderName = createAsyncThunk(
+  ActionType.CHANGE_FOLDER_NAME,
+  async ({ folderId, newFolderName }, { getState }) => {
+    const {
+      fs: {
+        structure
+      }
+    } = getState();
+    const newStructure = renameFsNodeToStructure(structure, { nodeId: folderId, newName: newFolderName });
+    await renameNodeToFs(structure, {
+      nodeId: folderId,
+      newName: newFolderName
+    });
+    return { structure: newStructure };
+  }
+);
+
 export const changeFileContent = createAsyncThunk(
   ActionType.CHANGE_FILE_CONTENT,
   async (newFile, { getState, rejectWithValue }) => {
@@ -107,8 +143,3 @@ export const changeFileContent = createAsyncThunk(
     return {};
   }
 );
-
-export const renameFolder = createAsyncThunk(
-  ActionType.RENAME_DIRECTORY,
-  data => data
-)
