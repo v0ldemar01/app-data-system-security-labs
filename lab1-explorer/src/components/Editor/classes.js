@@ -25,5 +25,5 @@ export const useStyles = makeStyles(theme => createStyles({
       transform: 'translate(14px, -6px) scale(0.75) !important',
       zIndex: 0
     }
-  },
+  }
 }));

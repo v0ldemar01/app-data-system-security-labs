@@ -6,7 +6,8 @@ const ActionType = {
   CREATE_FILE: 'fs/create-file',
   DELETE_FILE: 'fs/delete-file',
   CREATE_DIRECTORY: 'fs/create-directory',
-  DELETE_DIRECTORY: 'fs/delete-directory',
+  CHANGE_FOLDER_NAME: 'fs/change-folder-name',
+  DELETE_DIRECTORY: 'fs/delete-directory'
 };
 
 export { ActionType };

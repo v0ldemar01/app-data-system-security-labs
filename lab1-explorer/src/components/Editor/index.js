@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useState, useEffect } from 'react';
-import { useDispatch } from 'react-redux';
 import { createErrorDialog } from 'helpers/dialog.helper';
+import PropTypes from 'prop-types';
 import {
   Box,
   Button,
@@ -14,21 +14,20 @@ import {
   Typography
 } from '@material-ui/core';
 
-import { useStyles } from './classes';
 import { useCommonStyles } from 'components/styles/common';
 import { useFormStyles } from 'styles/form';
-import { fsActionCreator } from 'store/actions';
+import { useStyles } from './classes';
 
 const Editor = ({
   fileOpen,
   expandedFile,
-  onChangeFile
+  onChangeFile,
+  onCreateNewFile,
+  handleCloseFile
 }) => {
   const [fileContent, setFileContent] = useState('');
   const [newFileName, setFileName] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
-
-  const dispatch = useDispatch();
 
   const classes = useStyles();
   const commonClasses = useCommonStyles();
@@ -40,43 +39,9 @@ const Editor = ({
     }
   }, [expandedFile]);
 
-  const handleCloseFile = useCallback(
-    () => dispatch(fsActionCreator.toggleExpandedFile(expandedFile?.id)),
-    [expandedFile, dispatch]
-  );
-
   const handleContentChange = useCallback(event => setFileContent(event.target.value), []);
 
   const handleFileNameChange = useCallback(event => setFileName(event.target.value), []);
-
-  const finalSaveFile = useCallback(
-    () => {
-      onChangeFile({
-        content: fileContent,
-        ...(expandedFile ? {
-          fileName: expandedFile?.fileName
-        } : {
-          fileName: newFileName
-        })
-      });
-      setFileContent('');
-      setFileName('');
-    },
-    [fileContent, expandedFile, newFileName, onChangeFile]
-  );
-
-  const handleSaveFile = useCallback(
-    () => {
-      if (expandedFile) {
-        finalSaveFile();
-      } else if (!fileContent) {
-        createErrorDialog('Failed creating file', 'File cannot be empty')
-      } else {
-        setModalOpen(true);
-      }
-    },
-    [expandedFile, fileContent, finalSaveFile]
-  );
 
   const handleCloseModal = useCallback(() => setModalOpen(false), []);
 
@@ -84,11 +49,47 @@ const Editor = ({
     () => {
       setFileContent('');
       setFileName('');
+      handleCloseFile();
+    },
+    [handleCloseFile]
+  );
+
+  const finalSaveFile = useCallback(
+    () => {
+      const fileData = {
+        content: fileContent,
+        fileName: expandedFile?.fileName ?? newFileName
+      };
       if (expandedFile) {
-        handleCloseFile();
+        onChangeFile(fileData);
+      } else {
+        onCreateNewFile(fileData);
+      }
+      handleCloseModal();
+      handleClear();
+    },
+    [
+      fileContent,
+      expandedFile,
+      newFileName,
+      onChangeFile,
+      onCreateNewFile,
+      handleClear,
+      handleCloseModal
+    ]
+  );
+
+  const handleSaveFile = useCallback(
+    () => {
+      if (expandedFile) {
+        finalSaveFile();
+      } else if (!fileContent) {
+        createErrorDialog('Failed creating file', 'File cannot be empty');
+      } else {
+        setModalOpen(true);
       }
     },
-    [expandedFile, handleCloseFile]
+    [expandedFile, fileContent, finalSaveFile]
   );
 
   const modalSetFileName = useMemo(
@@ -178,6 +179,14 @@ const Editor = ({
       </Paper>
     </Box>
   );
+};
+
+Editor.propTypes = {
+  fileOpen: PropTypes.bool.isRequired,
+  expandedFile: PropTypes.oneOfType([PropTypes.object]).isRequired,
+  onChangeFile: PropTypes.func.isRequired,
+  onCreateNewFile: PropTypes.func.isRequired,
+  handleCloseFile: PropTypes.func.isRequired
 };
 
 export default Editor;

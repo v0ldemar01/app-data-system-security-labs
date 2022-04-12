@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { Box } from '@material-ui/core';
 
 import { useStyles } from './classes';
@@ -13,6 +14,14 @@ const AppLogo = ({
       {children}
     </Box>
   );
+};
+
+AppLogo.propTypes = {
+  children: PropTypes.node
+};
+
+AppLogo.defaultProps = {
+  children: null
 };
 
 export default AppLogo;

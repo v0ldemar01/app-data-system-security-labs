@@ -6,5 +6,12 @@ export const useStyles = makeStyles(theme => createStyles({
     backgroundColor: '#fff !important',
     opacity: '1 !important',
     padding: 7.5
+  },
+  editorIcon: {
+    marginRight: theme.spacing(1)
+  },
+
+  iconContainer: {
+    padding: '0 !important'
   }
 }));

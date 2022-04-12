@@ -32,12 +32,12 @@ const initialState = {
         {
           path: 'C://',
           allow: ['R', 'W', 'X']
-        },
+        }
       ]
     }
   ],
   activeCredentials: null
-}
+};
 
 export const reducer = createReducer(initialState, builder => {
   builder.addCase(userActions.authUser.fulfilled, (state, action) => {

@@ -1,13 +1,21 @@
+/* eslint-disable react/no-unstable-nested-components */
 import React, { useCallback, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { userActionCreator } from 'store/actions';
 import { Field, Form, Formik } from 'formik';
-import { initialValues, validationSchema } from './form';
 import { convertFirstCharToUpper } from 'helpers/character.helper';
 import clsx from 'clsx';
 import Select, { components as Components } from 'react-select';
 import makeAnimated from 'react-select/animated';
-import { Box, Button, Grid, IconButton, TextField, Typography, useTheme } from '@material-ui/core';
+import {
+  Box,
+  Button,
+  Grid,
+  IconButton,
+  TextField,
+  Typography,
+  useTheme
+} from '@material-ui/core';
 import {
   Visibility as VisibilityIcon,
   VisibilityOff as VisibilityOffIcon,
@@ -16,6 +24,7 @@ import {
 
 import { useFormStyles } from 'styles/form';
 import { selectStyles } from 'styles/select';
+import { initialValues, validationSchema } from './form';
 
 const animatedComponents = makeAnimated();
 
@@ -48,7 +57,7 @@ const AuthForm = () => {
     <Formik
       initialValues={initialValues}
       validationSchema={validationSchema}
-      onSubmit={(values, { setSubmitting }) => handleAuthUser(values)}
+      onSubmit={values => handleAuthUser(values)}
     >
       {({ values, errors, touched, handleSubmit, handleChange, setFieldValue }) => (
         <Form onSubmit={handleSubmit}>

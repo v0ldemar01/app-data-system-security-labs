@@ -4,7 +4,6 @@
   "compilerOptions": {
     "baseUrl": "src",
     "target": "es2020",
-    "checkJs": true,
     "jsx": "react",
     "moduleResolution": "node"
   }
